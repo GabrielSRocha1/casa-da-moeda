@@ -13,7 +13,10 @@
 
   /* ---------- API do backend ---------- */
   function apiUrl(path) {
-    const base = (window.CMMD_ENV && window.CMMD_ENV.API_URL) || 'http://localhost:3333';
+    // API_URL === '' significa mesma origem (deploy na Vercel, site e API juntos).
+    const base = (window.CMMD_ENV && typeof window.CMMD_ENV.API_URL === 'string')
+      ? window.CMMD_ENV.API_URL
+      : 'http://localhost:3333';
     return base.replace(/\/+$/, '') + path;
   }
   async function callApi(path, body, opts) {

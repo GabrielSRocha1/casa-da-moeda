@@ -27,9 +27,14 @@ async function loadEnv() {
 }
 
 const env = await loadEnv();
+// Variáveis do processo (ex.: painel da Vercel) têm prioridade sobre o .env em disco.
+for (const key of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'API_URL']) {
+  if (process.env[key] !== undefined) env[key] = process.env[key];
+}
 
 // Lista de permissão: só chaves PÚBLICAS entram no bundle do site.
-const PUBLIC_KEYS = { SUPABASE_URL: '', SUPABASE_ANON_KEY: '', API_URL: 'http://localhost:3333' };
+// Na Vercel a API é servida na mesma origem (/api), então o default é '' (same-origin).
+const PUBLIC_KEYS = { SUPABASE_URL: '', SUPABASE_ANON_KEY: '', API_URL: process.env.VERCEL ? '' : 'http://localhost:3333' };
 const publicEnv = {};
 for (const key of Object.keys(PUBLIC_KEYS)) publicEnv[key] = env[key] || PUBLIC_KEYS[key];
 

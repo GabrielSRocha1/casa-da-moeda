@@ -739,7 +739,10 @@
     const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
 
     /** API do backend (ordens P2P, verificação). Vem do .env via assets/env.js. */
-    const API_URL = ((window.CMMD_ENV && window.CMMD_ENV.API_URL) || 'http://localhost:3333').replace(/\/+$/, '');
+    // API_URL === '' significa mesma origem (deploy na Vercel, site e API juntos).
+    const API_URL = ((window.CMMD_ENV && typeof window.CMMD_ENV.API_URL === 'string')
+      ? window.CMMD_ENV.API_URL
+      : 'http://localhost:3333').replace(/\/+$/, '');
 
     /** Outras cripto do P2P — cotações de referência simuladas. */
     const OTHER_ASSETS = {

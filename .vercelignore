@@ -1,0 +1,10 @@
+mastter-factory
+docs
+.cursor
+supabase
+backend/data
+backend/tests
+frontend/tests
+.env
+.env.*
+!.env.example

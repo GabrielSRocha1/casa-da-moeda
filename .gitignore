@@ -1,5 +1,6 @@
 node_modules/
 dist/
+public/
 backend/data/
 frontend/tests/output/
 __pycache__/

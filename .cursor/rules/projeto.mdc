@@ -1,0 +1,49 @@
+---
+description: Contexto e regras do projeto Casa da Moeda Master Digital
+globs:
+alwaysApply: true
+---
+
+# Casa da Moeda Master Digital — regras do projeto
+
+## Contexto
+Plataforma de **utility tokens** comunitários (Bode Coin `BODE`, Verum Coin `VRM`, Escoteiros Coin `ESC`):
+compra P2P via Pix com entrega na **Verum Wallet** (auto-custódia, origem Solana) e solicitação de parceria
+para instituições que querem tokenizar (empresas, eventos, times, feiras, ONGs, igrejas, clubes, fraternidades).
+
+Monorepo:
+- `frontend/` — `index.html` único com JavaScript nativo (sem framework). Tailwind compilado em `assets/app.css`.
+- `backend/` — Node 20 + TypeScript (ESM, NodeNext) + Express + Drizzle + Zod + Pino. Módulos em `src/modules/*` (routes → service → db).
+- `supabase/migrations/` — SQL idempotente com RLS. `001` = plataforma, `002` = parcerias.
+- `docs/PENDENCIAS.md` — o que falta para produção.
+
+## Idioma
+- Toda interface, mensagem de erro, comentário e documentação em **português do Brasil**.
+- Códigos de erro da API em inglês e MAIÚSCULAS (`ORDER_NOT_FOUND`), com mensagem em português.
+
+## Identidade visual (obrigatória)
+- Estrutura: azul (`casa-navy`, `casa-blue`, `casa-sky`), amarelo (`casa-gold`, `casa-sun`) e branco.
+- Texto: cinza (`ink`, `ink-soft`, `ink-strong`).
+- Ação, sucesso e alta: **verde** (`up`). Alerta, cancelamento e baixa: **vermelho** (`down`).
+- Depois de adicionar classes Tailwind novas no `index.html`, rode `npm --prefix frontend run build:css` (ou use `npm run dev:site`).
+- Não reintroduzir Tailwind via CDN: o site precisa funcionar offline.
+
+## Regras de domínio
+- Todos os ativos são **utility tokens**: nada de prometer lucro, rendimento, dividendos ou valorização. O backend e o banco rejeitam esses textos.
+- O **aviso legal** (`DISCLAIMER` / `LEGAL_DISCLAIMER`) precisa ter o mesmo texto no site, na API e no SQL.
+- Dinheiro **nunca** em float: API usa BigInt (`backend/src/shared/money.ts`), banco usa `NUMERIC`, e valores trafegam como string decimal.
+- A quantidade de tokens é truncada **para baixo**: a plataforma nunca envia a mais.
+- Status da ordem: `PENDING → PAID → COMPLETED`; `PENDING → CANCELLED | EXPIRED | FAILED`; `EXPIRED → PAID` só por confirmação do gateway (pagamento tardio). Não pular etapas.
+- Endereço de carteira: Solana (base58, 32 bytes, chave **na curva Ed25519**, PDAs recusados) ou EVM (checksum EIP-55). Recusar frase-semente e chave privada coladas por engano.
+
+## Segurança
+- Nunca colocar a chave `service_role` do Supabase no frontend. O site usa só a chave **anon** (meta tags no `<head>`).
+- O webhook de pagamento só pode ser chamado depois de verificar a assinatura do provedor.
+- O frontend não lê tabelas sensíveis: usa RPCs (`create_p2p_order`, `get_p2p_order`) ou INSERT com `Prefer: return=minimal`.
+- Não logar corpo de requisição, endereços completos, e-mails ou telefones.
+
+## Antes de concluir qualquer mudança
+- `npm test` na raiz (backend + supabase + site) precisa continuar 100% verde.
+- Mudou o schema da API? Rode `npm --prefix backend run db:generate` para gerar a migration.
+- Mudou SQL do Supabase? Mantenha o script idempotente (`IF NOT EXISTS`, `CREATE OR REPLACE`, `DROP POLICY IF EXISTS`).
+- Pix e envio on-chain são **simulados**: deixar isso explícito em qualquer tela ou resposta que mostre pagamento.

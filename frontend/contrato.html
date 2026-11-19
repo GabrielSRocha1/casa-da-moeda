@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mastter Digital Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: uma coluna central (máx. 560px), um único cartão de formulário dividido por
+   seções, botão de ação largo ao final. Tema claro único: papel bege, cartões brancos, destaque verde. */
+:root{
+  /* Paleta da nota de US$ 100 puxada para o verde: verde (destaque), azul-claro (apoio), branco, bege, preto.
+     --accent-deep é um verde mais escuro, só para texto e foco. */
+  color-scheme:light;
+  --bg:#F2E8D5; --card:#FFFFFF; --soft:#F9F4EA; --line:#E4D9C3;
+  --text:#202820; --muted:#59635A; --faint:#8C958C;
+  --accent:#85BB65; --accent-press:#74AB54; --accent-deep:#3F6B26; --accent-wash:#EAF4E2; --accent-ink:#202820;
+  --sky:#A7D8E8; --sky-wash:#E6F4F9;
+  --ok:#85BB65; --ok-deep:#3F6B26; --ok-wash:#EAF4E2; --bad:#C8382F;
+  --display:"Sora",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:400 15px/1.5 var(--body);-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-deep);outline-offset:2px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:560px;margin:0 auto;padding:14px 16px}
+.logo{font:700 16px var(--display);display:flex;align-items:center;gap:8px}
+.logo i{width:22px;height:22px;border-radius:7px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink);font:700 12px var(--display);font-style:normal}
+.top button{border:1px solid var(--accent-press);background:var(--card);color:var(--text);border-radius:10px;padding:8px 12px;font:600 13px var(--display);cursor:pointer}
+
+main{max-width:560px;margin:0 auto;padding:8px 16px 64px;display:flex;flex-direction:column;gap:20px}
+.hero{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;padding:24px 16px;background:var(--accent);border-radius:18px}
+.hero .tag{font:500 12px var(--display);color:var(--text);background:var(--card);border:1px solid var(--card);border-radius:99px;padding:5px 12px}
+.hero h1{font-size:30px;line-height:1.12;font-weight:700}
+.hero p{color:#2F3B33;font:400 16px/1.55 var(--display);max-width:34ch}
+
+.form{background:var(--card);border-radius:18px;box-shadow:0 1px 0 var(--line),0 12px 32px -18px rgba(32,40,32,.22);padding:6px 16px 20px;display:flex;flex-direction:column}
+.sec{padding:20px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:14px}
+.sec:last-of-type{border-bottom:0}
+.sec>h2{font-size:15px;font-weight:600}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.5}
+.lock{display:flex;gap:8px;font-size:12.5px;color:var(--muted);line-height:1.5}
+.lock::before{content:"i";flex:none;width:15px;height:15px;border-radius:50%;background:var(--text);color:#fff;font:600 10px/15px var(--display);text-align:center;margin-top:2px}
+
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font:500 14px var(--display);display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.field label b{font-weight:500}
+.field label b::before{content:"* ";color:var(--bad)}
+.field label.opt b::before{content:""}
+.field label span{font:400 12px var(--display);color:var(--faint)}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;font:400 15px var(--display);min-width:0}
+.field input::placeholder,.field textarea::placeholder{color:var(--faint)}
+.field input.mono{font-family:var(--mono);font-size:13.5px}
+.field textarea{resize:vertical;min-height:64px}
+.field small{font-size:12.5px;color:var(--muted)}
+.field.err input,.field.err textarea{border-color:var(--bad)}
+.field .e{font-size:12.5px;color:var(--bad);display:none}
+.field.err .e{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:380px){.two{grid-template-columns:1fr}}
+
+.caps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cap{position:relative}
+.cap input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.cap div{border:1px solid var(--line);border-radius:12px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.cap b{font:600 17px var(--display)}
+.cap span{font-size:11.5px;color:var(--muted)}
+.cap input:checked+div{border-color:var(--accent-press);background:var(--accent)}
+.cap input:checked+div span{color:var(--text)}
+.cap input:focus-visible+div{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+.split{display:flex;flex-direction:column;gap:6px}
+.split .pc{display:flex;font:500 13px var(--display)}
+.split .pc span{text-align:center}
+.split .bar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:var(--line)}
+.split .bar i{display:block;height:100%}
+.split .lb{display:flex;font-size:12px;color:var(--muted)}
+.split .lb span{text-align:center}
+.w30{width:30%}.w70{width:70%}
+.bar .a{background:var(--accent)} .bar .b{background:var(--sky)}
+.bar i.b[style]{background:var(--line)}
+
+.tog{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.tog h3{font-size:14.5px;font-weight:600}
+.tog p{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.sw{position:relative;flex:none;width:44px;height:26px;margin-top:2px}
+.sw input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0}
+.sw span{position:absolute;inset:0;border-radius:99px;background:#D9D2C2;transition:background .15s}
+.sw span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+.sw input:checked+span{background:var(--accent)}
+.sw input:checked+span::after{background:var(--text)}
+.sw input:checked+span::after{transform:translateX(18px)}
+.sw input:disabled{cursor:not-allowed}
+.sw input:focus-visible+span{outline:2px solid var(--accent-deep);outline-offset:2px}
+
+.prop{border:1px solid var(--accent);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;background:#fff}
+.prop header{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.prop h3{font-size:14.5px;font-weight:600;display:flex;gap:8px;align-items:center}
+.prop h3 svg{flex:none}
+.prop p{font-size:12.5px;color:var(--muted);line-height:1.5}
+.inc{display:flex;align-items:center;gap:8px;font:500 12px var(--display);color:var(--muted);white-space:nowrap}
+.inc::after{content:"✓";width:18px;height:18px;border-radius:4px;background:var(--ok);color:var(--text);font:700 12px/18px var(--display);text-align:center}
+.props{display:flex;flex-direction:column;gap:10px}
+
+details summary{list-style:none;cursor:pointer;font:600 15px var(--display);display:flex;align-items:center;gap:8px}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--text);border-bottom:2px solid var(--text);transform:rotate(45deg) translateY(-2px);transition:transform .15s}
+details[open] summary::after{transform:rotate(225deg) translateY(-2px)}
+details .inner{display:flex;flex-direction:column;gap:14px;padding-top:14px}
+
+.sum{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;justify-content:space-between;gap:12px;font-size:13.5px}
+.row span:first-child{color:var(--muted)}
+.row span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;overflow-wrap:anywhere}
+.cta{border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font:700 17px var(--display);padding:16px;cursor:pointer;width:100%}
+.cta:active{background:var(--accent-press)}
+.total{text-align:center;font:500 13px var(--display)}
+.total b{font-weight:700}
+.msg{display:none;border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.5}
+.msg.on{display:block}
+.msg.bad{background:#FBEAE8;color:#9A2A23}
+.msg.ok{background:var(--ok-wash);color:var(--ok-deep);border:1px solid var(--ok)}
+.out{display:none;flex-direction:column;gap:10px}
+.out.on{display:flex}
+pre{margin:0;background:var(--text);color:var(--bg);border-radius:12px;padding:12px;font:400 12px/1.6 var(--mono);overflow-x:auto;white-space:pre}
+.ghost{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;font:500 13px var(--display);cursor:pointer;align-self:flex-start}
+
+.brandbox{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.banner{position:relative;aspect-ratio:3/1;background:repeating-linear-gradient(135deg,#EEF7FA 0 10px,#DDEEF4 10px 20px);display:grid;place-items:center;cursor:pointer}
+.banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.banner.has img{display:block}
+.banner .ph{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:8px 8px 8px 96px;color:var(--muted)}
+.banner .ph b{font:600 13.5px var(--display);color:var(--accent-deep)}
+.banner .ph span{font-size:11.5px}
+.banner.has .ph{display:none}
+.banner input,.coin input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.banner input:focus-visible,.coin input:focus-visible{opacity:1;outline:2px solid var(--accent-deep);outline-offset:-2px;color:transparent}
+.idrow{display:flex;gap:12px;align-items:flex-end;padding:0 12px 12px;margin-top:-34px;position:relative}
+.coin{position:relative;flex:none;width:84px;height:84px;border-radius:50%;border:3px solid #fff;background:var(--accent-wash);box-shadow:0 2px 10px rgba(32,40,32,.2);display:grid;place-items:center;overflow:hidden;cursor:pointer}
+.coin img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.coin.has img{display:block}
+.coin .ph{font:600 10.5px/1.25 var(--display);color:var(--accent-deep);text-align:center;padding:0 6px}
+.coin.has .ph{display:none}
+.idtxt{min-width:0;padding-bottom:4px;display:flex;flex-direction:column}
+.idtxt b{font:600 16px var(--display);overflow-wrap:anywhere}
+.idtxt span{font:400 12.5px var(--mono);color:var(--muted)}
+.social{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 12px}
+.social a{font:500 12px var(--display);color:var(--accent-deep);border:1px solid var(--line);border-radius:99px;padding:5px 10px;text-decoration:none}
+.social:empty{display:none}
+.imgbtns{display:flex;flex-wrap:wrap;gap:8px}
+.imgbtns button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 10px;font:500 12.5px var(--display);cursor:pointer}
+.imgbtns button[hidden]{display:none}
+.perm{border:1px solid var(--sky);background:var(--sky-wash);border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.5;color:var(--text)}
+.perm b{font:600 13px var(--display);display:block;color:var(--text);margin-bottom:2px}
+.fp{font:400 11.5px/1.5 var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.fp:empty{display:none}
+.agree{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5;cursor:pointer}
+.agree input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--ok)}
+.agree.err{color:var(--bad)}
+.imgerr{font-size:12.5px;color:var(--bad)}
+.imgerr:empty{display:none}
+.pre{position:relative}
+.pre i{position:absolute;left:14px;top:50%;transform:translateY(-50%);font:500 13px var(--mono);color:var(--faint);font-style:normal;pointer-events:none}
+
+.stats{display:flex;flex-direction:column;gap:14px;align-items:center;text-align:center;padding:4px}
+.stats h2{font-size:15px;font-weight:500;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.dot{font:500 11px var(--display);color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent-deep)}
+.grid3{display:grid;grid-template-columns:1fr 1fr;gap:14px 28px}
+.grid3 div b{display:block;color:var(--text);font:600 22px var(--display)}
+.grid3 div span{font:400 13.5px var(--display);color:var(--muted)}
+.grid3 div:last-child{grid-column:1/-1}
+
+.steps{display:flex;flex-direction:column;gap:12px}
+.steps h2{font-size:17px;font-weight:600}
+.step{display:flex;gap:12px;background:var(--card);border-radius:14px;padding:14px;border:1px solid var(--line)}
+.step i{flex:none;width:28px;height:28px;border-radius:50%;background:var(--sky);color:var(--text);font:600 13px/28px var(--display);text-align:center;font-style:normal}
+.step h3{font-size:14.5px;font-weight:600}
+.step p{font-size:13px;color:var(--muted);margin-top:2px}
+footer{font-size:12px;color:var(--muted);max-width:60ch;margin:0 auto;text-align:center;line-height:1.6}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="logo"><i>M</i>Mastter.Digital</div>
+  <button type="button" id="connect-top">Conectar carteira</button>
+</div>
+
+<main>
+  <div class="hero">
+    <span class="tag">Solana · SPL Token-2022</span>
+    <h1>Criador de tokens da Mastter.Digital</h1>
+    <p>Crie o token lastreado da sua empresa sem código: cofre próprio, vesting on-chain e proteção anti-baleia.</p>
+  </div>
+
+  <form class="form" id="f" novalidate>
+    <!-- Identidade visual -->
+    <div class="sec">
+      <h2>Imagem do token</h2>
+      <div class="brandbox">
+        <div class="banner" id="bannerBox">
+          <img id="bannerImg" alt="Banner do token">
+          <div class="ph"><b>Adicionar banner</b><span>Capa larga, como a de um canal · 1500 × 500 px</span></div>
+          <input type="file" id="bannerFile" accept="image/png,image/jpeg,image/webp" aria-label="Escolher imagem do banner">
+        </div>
+        <div class="idrow">
+          <div class="coin" id="logoBox">
+            <img id="logoImg" alt="Imagem da moeda">
+            <div class="ph">Imagem da moeda *</div>
+            <input type="file" id="logoFile" accept="image/png,image/jpeg,image/webp" aria-label="Escolher imagem da moeda">
+          </div>
+          <div class="idtxt"><b id="p-name">Nome do token</b><span id="p-sym">SÍMBOLO</span></div>
+        </div>
+        <div class="social" id="p-social"></div>
+      </div>
+      <div class="imgbtns">
+        <button type="button" id="bannerClear" hidden>Remover banner</button>
+        <button type="button" id="logoClear" hidden>Remover imagem da moeda</button>
+      </div>
+      <div class="imgerr" id="imgErr" role="status"></div>
+      <div class="perm"><b>A imagem da moeda é definitiva</b>Ela é registrada junto com o nome e o símbolo na criação do token e nunca mais pode ser trocada, nem pela Mastter.Digital. Confira antes de criar.</div>
+      <div class="fp" id="fp"></div>
+      <p class="hint">Moeda: imagem quadrada, 1000 × 1000 px (aparece redonda). PNG, JPG ou WebP, até 5 MB cada. O banner e os links podem ser atualizados depois.</p>
+    </div>
+
+    <!-- Token -->
+    <div class="sec">
+      <div class="field" data-f="tokenName">
+        <label for="tokenName"><b>Nome</b><span id="c-tokenName">0 / 32</span></label>
+        <input id="tokenName" maxlength="32" placeholder="Exemplo: Café Guarani Token" autocomplete="off">
+        <div class="e"></div>
+      </div>
+      <div class="field" data-f="tokenSymbol">
+        <label for="tokenSymbol"><b>Símbolo</b><span id="c-tokenSymbol">0 / 10</span></label>
+        <input id="tokenSymbol" maxlength="10" placeholder="Ex: CGR" autocomplete="off">
+        <div class="e"></div>
+      </div>
+      <div class="field" data-f="decimals">
+        <label for="decimals"><b>Decimais</b></label>
+        <input id="decimals" inputmode="numeric" value="6">
+        <small>0 a 9 · recomendado: 6</small>
+        <div class="e"></div>
+      </div>
+    </div>
+
+    <!-- Hard Cap -->
+    <div class="sec">
+      <h2>Fornecimento máximo (Hard Cap)</h2>
+      <div class="caps" role="radiogroup" aria-label="Hard Cap">
+        <label class="cap"><input type="radio" name="cap" value="25000000" checked><div><b>25 M</b><span>25.000.000</span></div></label>
+        <label class="cap"><input type="radio" name="cap" value="50000000"><div><b>50 M</b><span>50.000.000</span></div></label>
+        <label class="cap"><input type="radio" name="cap" value="100000000"><div><b>100 M</b><span>100.000.000</span></div></label>
+      </div>
+      <p class="hint">Só existem estas três opções. O contrato nunca cunha além do Hard Cap; tokens queimados em resgates voltam a ficar disponíveis.</p>
+      <div class="split" aria-hidden="true">
+        <div class="pc"><span class="w30">30 %</span><span class="w70">70 %</span></div>
+        <div class="bar"><i class="a w30"></i><i class="b w70"></i></div>
+        <div class="lb"><span class="w30">Vesting da entidade</span><span class="w70">Disponível para venda</span></div>
+      </div>
+      <div class="sum">
+        <div class="row"><span>Cunhados na criação (vesting)</span><span id="s-vest">–</span></div>
+        <div class="row"><span>Disponíveis para compra</span><span id="s-sale">–</span></div>
+      </div>
+    </div>
+
+    <!-- Lastro -->
+    <div class="sec">
+      <h2>Lastro inicial</h2>
+      <div class="field" data-f="pool">
+        <label for="pool"><b>Aporte inicial em USDC</b></label>
+        <input id="pool" inputmode="decimal" value="75000">
+        <small>Define o preço de partida: aporte ÷ tokens do vesting.</small>
+        <div class="e"></div>
+      </div>
+      <div class="sum"><div class="row"><span>Preço inicial por token</span><span id="s-price">–</span></div></div>
+    </div>
+
+    <!-- Entidade -->
+    <div class="sec">
+      <h2>Dados da entidade</h2>
+      <div class="two">
+        <div class="field" data-f="entityId"><label for="entityId"><b>ID da entidade</b></label><input id="entityId" inputmode="numeric" placeholder="Ex: 1"><div class="e"></div></div>
+        <div class="field" data-f="contractNumber"><label for="contractNumber"><b>Nº do contrato</b></label><input id="contractNumber" inputmode="numeric" placeholder="Ex: 2026001"><div class="e"></div></div>
+      </div>
+      <div class="field" data-f="companyName"><label for="companyName"><b>Razão social</b><span id="c-companyName">0 / 64</span></label><input id="companyName" maxlength="64" placeholder="Nome empresarial"><div class="e"></div></div>
+      <div class="field" data-f="address"><label for="address"><b>Endereço</b><span id="c-address">0 / 128</span></label><textarea id="address" maxlength="128" placeholder="Rua, número, cidade"></textarea><div class="e"></div></div>
+      <div class="two">
+        <div class="field" data-f="phone"><label for="phone"><b>Telefone</b></label><input id="phone" maxlength="24" inputmode="tel" placeholder="+595 ..."><div class="e"></div></div>
+        <div class="field" data-f="country"><label for="country"><b>País</b></label><input id="country" maxlength="32" placeholder="Ex: Paraguay"><div class="e"></div></div>
+      </div>
+      <div class="field" data-f="directorsNames"><label for="directorsNames"><b>Diretores</b><span id="c-directorsNames">0 / 160</span></label><textarea id="directorsNames" maxlength="160" placeholder="Nomes separados por ponto e vírgula"></textarea><div class="e"></div></div>
+      <div class="field" data-f="payerName"><label for="payerName"><b>Pagador</b><span id="c-payerName">0 / 64</span></label><input id="payerName" maxlength="64" placeholder="Nome do responsável pelo pagamento"><div class="e"></div></div>
+      <div class="field" data-f="verumWallet">
+        <label for="verumWallet"><b>Verum Wallet da entidade</b></label>
+        <input id="verumWallet" class="mono" placeholder="Endereço Solana" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <small>Único destino dos tokens do vesting. Não pode ser trocada depois.</small>
+        <div class="e"></div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="sec">
+      <h2>Links da empresa</h2>
+      <div class="field" data-f="website">
+        <label for="website" class="opt"><b>Site</b><span>opcional</span></label>
+        <input id="website" inputmode="url" placeholder="https://suaempresa.com" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="e"></div>
+      </div>
+      <div class="field" data-f="telegram">
+        <label for="telegram" class="opt"><b>Telegram</b><span>opcional</span></label>
+        <input id="telegram" placeholder="https://t.me/seugrupo ou @seugrupo" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="e"></div>
+      </div>
+      <div class="field" data-f="twitter">
+        <label for="twitter" class="opt"><b>X (Twitter)</b><span>opcional</span></label>
+        <input id="twitter" placeholder="https://x.com/suaempresa ou @suaempresa" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="e"></div>
+      </div>
+    </div>
+
+    <!-- Taxa -->
+    <div class="sec">
+      <div class="tog">
+        <div><h3>Taxa de serviço Mastter.Digital: 1,19 %</h3><p>Cobrada uma vez em cada compra e em cada resgate, direto para a carteira de receita da Mastter. Calculada on-chain.</p></div>
+        <label class="sw" title="Sempre ativa"><input type="checkbox" checked disabled aria-label="Taxa de serviço sempre ativa"><span></span></label>
+      </div>
+      <div class="tog">
+        <div><h3>Cobrar a taxa também nas injeções de lucro</h3><p>Desligado: 100 % do lucro repassado vai para o lastro.</p></div>
+        <label class="sw"><input type="checkbox" id="feeOnProfit" aria-label="Cobrar taxa nas injeções de lucro"><span></span></label>
+      </div>
+    </div>
+
+    <!-- Vesting -->
+    <div class="sec">
+      <div class="tog">
+        <div><h3>Vesting da entidade: 30 % do Hard Cap</h3><p>Carência de 180 dias. Depois, liberação linear até completar 24 meses da criação.</p></div>
+        <label class="sw" title="Sempre ativo"><input type="checkbox" checked disabled aria-label="Vesting sempre ativo"><span></span></label>
+      </div>
+      <div class="split" aria-hidden="true">
+        <div class="bar"><i class="b" style="width:24.66%"></i><i class="a" style="width:75.34%"></i></div>
+        <div class="lb"><span style="width:24.66%">carência</span><span style="width:75.34%">liberação linear</span></div>
+        <div class="lb"><span style="width:24.66%;text-align:left">dia 0</span><span style="width:50%;text-align:left">dia 180</span><span style="width:25.34%;text-align:right">dia 730</span></div>
+      </div>
+    </div>
+
+    <!-- Limites -->
+    <div class="sec">
+      <h2>Limites de negociação</h2>
+      <div class="prop">
+        <header><h3><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1l6 2.2v4.3c0 3.5-2.4 6.2-6 7.5-3.6-1.3-6-4-6-7.5V3.2z" fill="#202820"/></svg>Anti-baleia</h3><span class="inc">incluído</span></header>
+        <p>Limites validados on-chain antes de qualquer compra ou cunhagem.</p>
+      </div>
+      <div class="field" data-f="minBuy"><label for="minBuy"><b>Compra mínima por transação (tokens)</b></label><input id="minBuy" inputmode="decimal" value="10"><div class="e"></div></div>
+      <div class="field" data-f="maxBuy"><label for="maxBuy"><b>Compra máxima por transação (tokens)</b></label><input id="maxBuy" inputmode="decimal" value="1000000"><div class="e"></div></div>
+      <div class="field" data-f="maxWallet"><label for="maxWallet"><b>Limite total por carteira (tokens)</b></label><input id="maxWallet" inputmode="decimal" value="2000000"><small>Mínima ≤ máxima ≤ limite por carteira ≤ Hard Cap.</small><div class="e"></div></div>
+    </div>
+
+    <!-- Propriedades -->
+    <div class="sec">
+      <h2>Propriedades do token</h2>
+      <p class="lock">Fazem parte do contrato de toda entidade e não podem ser removidas.</p>
+      <div class="props">
+        <div class="prop"><header><h3>Identidade imutável</h3><span class="inc">incluído</span></header><p>Nome, símbolo e imagem da moeda são gravados uma única vez. A autoridade de alteração é revogada na própria criação.</p></div>
+        <div class="prop"><header><h3>Lastreado</h3><span class="inc">incluído</span></header><p>O detentor devolve tokens ao protocolo e recebe o valor proporcional do cofre em SOL ou USDC. Os tokens devolvidos são queimados.</p></div>
+        <div class="prop"><header><h3>Cunhagem elástica</h3><span class="inc">incluído</span></header><p>Novos tokens só nascem quando alguém compra, sempre dentro do Hard Cap. A Mint Authority é do próprio contrato.</p></div>
+        <div class="prop"><header><h3>Lucro vira lastro</h3><span class="inc">incluído</span></header><p>Repasses de faturamento entram no cofre sem cunhar tokens, aumentando o lastro por token.</p></div>
+        <div class="prop"><header><h3>Sem congelamento</h3><span class="inc">incluído</span></header><p>Freeze Authority nula: ninguém consegue congelar a carteira de um detentor.</p></div>
+        <div class="prop"><header><h3>Pausa de emergência</h3><span class="inc">incluído</span></header><p>A Mastter.Digital pode pausar compras e resgates do cofre em caso de incidente.</p></div>
+      </div>
+    </div>
+
+    <!-- Avançadas -->
+    <div class="sec">
+      <details id="adv">
+        <summary>Opções avançadas</summary>
+        <div class="inner">
+          <div class="field" data-f="profitInjector">
+            <label for="profitInjector" class="opt"><b>Carteira que envia os lucros</b></label>
+            <input id="profitInjector" class="mono" placeholder="Endereço Solana (em branco: a carteira que criar)" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <small>Só esta carteira pode chamar a injeção de lucro deste cofre.</small>
+            <div class="e"></div>
+          </div>
+          <div class="field" data-f="tokenUri">
+            <label for="tokenUri" class="opt"><b>Link permanente dos metadados</b></label>
+            <input id="tokenUri" class="mono" maxlength="200" placeholder="https://arweave.net/..." autocomplete="off" autocapitalize="off" spellcheck="false">
+            <small>Só preencha se a imagem já estiver em armazenamento permanente. Em branco, o link é gerado na hospedagem.</small>
+            <div class="e"></div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- Resumo + ação -->
+    <div class="sec">
+      <div class="sum">
+        <div class="row"><span>Token</span><span id="r-token">–</span></div>
+        <div class="row"><span>Hard Cap</span><span id="r-cap">–</span></div>
+        <div class="row"><span>Vesting (30 %)</span><span id="r-vest">–</span></div>
+        <div class="row"><span>Preço inicial</span><span id="r-price">–</span></div>
+        <div class="row"><span>Taxa por operação</span><span>1,19 %</span></div>
+      </div>
+      <label class="agree" id="agreeBox"><input type="checkbox" id="agree"><span>Entendo que o nome, o símbolo e a imagem da moeda são permanentes e não poderão ser alterados depois da criação.</span></label>
+      <div class="msg" id="msg" role="status"></div>
+      <button type="submit" class="cta">Conectar carteira</button>
+      <p class="total">Você aporta: <b id="r-total">–</b> + taxas de rede da Solana</p>
+      <div class="out" id="out">
+        <p class="hint">Parâmetros conferidos pelas mesmas regras do contrato. Os dois primeiros blocos vão para o contrato. A identidade permanente fica travada na criação; o perfil (banner e links) pode ser editado depois.</p>
+        <pre id="json"></pre>
+        <button type="button" class="ghost" id="copy">Copiar parâmetros</button>
+      </div>
+    </div>
+  </form>
+
+  <section class="stats">
+    <h2>Estado do contrato <span class="dot">ainda não implantado</span></h2>
+    <div class="grid3">
+      <div><b>16</b><span>Instruções on-chain</span></div>
+      <div><b>46 / 46</b><span>Testes aprovados</span></div>
+      <div><b>0</b><span>Tokens criados</span></div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <h2>Como funciona</h2>
+    <div class="step"><i>1</i><div><h3>Preencha e conecte a carteira</h3><p>Os dados da empresa ficam registrados on-chain junto do cofre.</p></div></div>
+    <div class="step"><i>2</i><div><h3>O cofre é criado e ativado</h3><p>Token, cofres de SOL e USDC, vesting de 30 % e o lastro inicial, tudo isolado por entidade.</p></div></div>
+    <div class="step"><i>3</i><div><h3>Compras, resgates e lucros</h3><p>O público compra com SOL ou USDC, resgata pelo lastro, e cada repasse de lucro valoriza o token.</p></div></div>
+  </section>
+
+  <footer>Pré-visualização da home. A carteira ainda não está ligada: nada é enviado à blockchain e nenhum valor é movimentado.</footer>
+</main>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const TEXT=["tokenName","tokenSymbol","companyName","address","phone","country","directorsNames","payerName"];
+const COUNT={tokenName:32,tokenSymbol:10,companyName:64,address:128,directorsNames:160,payerName:64};
+const ALL=["tokenName","tokenSymbol","decimals","pool","entityId","contractNumber","companyName","address","phone","country","directorsNames","payerName","verumWallet","minBuy","maxBuy","maxWallet","profitInjector","tokenUri","website","telegram","twitter"];
+const IMG={banner:null,logo:null};
+let LOGO_HASH=null; // SHA-256 (hex) do arquivo da moeda
+const B58=/^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+const LABEL={tokenName:"Nome",tokenSymbol:"Símbolo",decimals:"Decimais",pool:"Aporte inicial",entityId:"ID da entidade",contractNumber:"Nº do contrato",companyName:"Razão social",address:"Endereço",phone:"Telefone",country:"País",directorsNames:"Diretores",payerName:"Pagador",verumWallet:"Verum Wallet",minBuy:"Compra mínima",maxBuy:"Compra máxima",maxWallet:"Limite por carteira",profitInjector:"Carteira que envia os lucros",tokenUri:"Link dos metadados",website:"Site",telegram:"Telegram",twitter:"X (Twitter)"};
+/* Normaliza os links: aceita URL completa ou @usuario. "" = vazio, null = inválido. */
+function normSite(v){v=v.trim(); if(!v) return ""; if(!/^https?:\/\//i.test(v)) v="https://"+v; return /^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+(\/\S*)?$/i.test(v)? v : null;}
+function normTelegram(v){v=v.trim(); if(!v) return ""; let m=v.match(/^@?([A-Za-z0-9_]{4,32})$/)||v.match(/^(?:https?:\/\/)?(?:t\.me|telegram\.me)\/(\+?[A-Za-z0-9_\-]{4,64})\/?$/i); return m? "https://t.me/"+m[1] : null;}
+function normX(v){v=v.trim(); if(!v) return ""; let m=v.match(/^@?([A-Za-z0-9_]{1,15})$/)||v.match(/^(?:https?:\/\/)?(?:www\.)?(?:x|twitter)\.com\/@?([A-Za-z0-9_]{1,15})\/?$/i); return m? "https://x.com/"+m[1] : null;}
+let touched=false;
+
+const cap=()=>BigInt(document.querySelector('input[name="cap"]:checked').value);
+const grp=(s)=>s.replace(/\B(?=(\d{3})+(?!\d))/g,".");
+const fmtInt=(v)=>grp(v.toString());
+function units(v,dec,frac){const b=10n**BigInt(dec);const i=v/b;const f=(v%b).toString().padStart(dec,"0").slice(0,frac);return grp(i.toString())+(frac?","+f:"");}
+/* "1.000,5" (com vírgula, ponto é milhar) ou "1000.5" -> unidades-base; null se inválido */
+function parse(str,dec){
+  let s=String(str).trim().replace(/\s/g,"");
+  s=s.includes(",")? s.replace(/\./g,"").replace(",",".") : s;
+  if(s===""||s==="."||!/^\d*\.?\d*$/.test(s)) return null;
+  const [i,f=""]=s.split(".");
+  if(f.length>dec && /[1-9]/.test(f.slice(dec))) return null;
+  return BigInt(i||"0")*10n**BigInt(dec)+BigInt((f+"0".repeat(dec)).slice(0,dec)||"0");
+}
+const uint=(str)=>/^\d{1,19}$/.test(String(str).trim())? BigInt(String(str).trim()) : null;
+
+function validate(){
+  const E={}, v=(id)=>$(id).value;
+  TEXT.forEach(id=>{ if(!v(id).trim()) E[id]="Preencha este campo."; });
+  const d=uint(v("decimals"));
+  if(d===null||d>9n) E.decimals="Use um número inteiro de 0 a 9.";
+  const dec= E.decimals? 6 : Number(d);
+  const pool=parse(v("pool"),6);
+  if(pool===null||pool<=0n) E.pool="Informe um valor maior que zero.";
+  const eid=uint(v("entityId")); if(eid===null||eid>18446744073709551615n) E.entityId="Número inteiro.";
+  const cn=uint(v("contractNumber")); if(cn===null||cn>18446744073709551615n) E.contractNumber="Número inteiro.";
+  if(!B58.test(v("verumWallet").trim())) E.verumWallet="Endereço Solana inválido.";
+  const capBase=cap()*10n**BigInt(dec);
+  const mn=parse(v("minBuy"),dec), mx=parse(v("maxBuy"),dec), mw=parse(v("maxWallet"),dec);
+  if(mn===null||mn<=0n) E.minBuy="Informe um valor maior que zero.";
+  if(mx===null||mx<=0n) E.maxBuy="Informe um valor maior que zero.";
+  if(mw===null||mw<=0n) E.maxWallet="Informe um valor maior que zero.";
+  if(!E.minBuy&&!E.maxBuy&&mn>mx) E.maxBuy="Deve ser maior ou igual à compra mínima.";
+  if(!E.maxBuy&&!E.maxWallet&&mx>mw) E.maxWallet="Deve ser maior ou igual à compra máxima.";
+  if(!E.maxWallet&&mw>capBase) E.maxWallet="Não pode passar do Hard Cap.";
+  const inj=v("profitInjector").trim();
+  if(inj&&!B58.test(inj)) E.profitInjector="Endereço Solana inválido.";
+  const uri=v("tokenUri").trim();
+  if(uri&&!/^https:\/\/\S+$/.test(uri)) E.tokenUri="Use um link começando com https://";
+  const site=normSite(v("website")), tg=normTelegram(v("telegram")), tw=normX(v("twitter"));
+  if(site===null) E.website="Link inválido. Exemplo: https://suaempresa.com";
+  if(tg===null) E.telegram="Use o link t.me ou o @ do grupo.";
+  if(tw===null) E.twitter="Use o link x.com ou o @ do perfil.";
+  return {E,dec,pool,eid,cn,mn,mx,mw,capBase,inj,uri,site,tg,tw};
+}
+
+function paint(){
+  Object.keys(COUNT).forEach(id=>{$("c-"+id).textContent=`${$(id).value.length} / ${COUNT[id]}`;});
+  const r=validate(), c=cap(), vest=c*30n/100n, sale=c-vest;
+  const sym=$("tokenSymbol").value.trim().toUpperCase();
+  $("s-vest").textContent=fmtInt(vest); $("s-sale").textContent=fmtInt(sale);
+  // preço inicial em US$ com 6 casas: pool(1e-6 USDC) / tokens do vesting
+  const price= r.pool&&r.pool>0n? "US$ "+units(r.pool*10n**6n/vest,12,6) : "–";
+  $("s-price").textContent=price; $("r-price").textContent=price;
+  $("r-token").textContent=($("tokenName").value.trim()||"–")+(sym?` (${sym})`:"");
+  $("r-cap").textContent=fmtInt(c);
+  $("r-vest").textContent=fmtInt(vest)+(sym?" "+sym:"");
+  $("r-total").textContent= r.pool&&r.pool>0n? units(r.pool,6,2)+" USDC" : "–";
+  $("p-name").textContent=$("tokenName").value.trim()||"Nome do token";
+  $("p-sym").textContent=sym||"SÍMBOLO";
+  const soc=$("p-social"); soc.textContent="";
+  [["Site",r.site],["Telegram",r.tg],["X",r.tw]].forEach(([t,u])=>{ if(u){const a=document.createElement("a"); a.href=u; a.target="_blank"; a.rel="noopener noreferrer"; a.textContent=t; soc.appendChild(a);} });
+  ALL.forEach(id=>{
+    const box=document.querySelector(`[data-f="${id}"]`), m=touched? r.E[id] : null;
+    box.classList.toggle("err",!!m); box.querySelector(".e").textContent=m||"";
+  });
+  return r;
+}
+
+function submit(ev){
+  if(ev) ev.preventDefault();
+  touched=true;
+  const r=paint(), bad=Object.keys(r.E), msg=$("msg"), out=$("out");
+  const extra=[];
+  if(!IMG.logo) extra.push("envie a imagem da moeda");
+  else if(!LOGO_HASH) extra.push("aguarde o cálculo da impressão digital da imagem");
+  if(!$("agree").checked) extra.push("marque que entende que nome, símbolo e imagem são permanentes");
+  $("agreeBox").classList.toggle("err",!$("agree").checked);
+  if(!bad.length&&extra.length){
+    out.classList.remove("on"); msg.className="msg on bad";
+    msg.textContent="Falta: "+extra.join("; ")+".";
+    (IMG.logo? $("agreeBox") : $("logoBox")).scrollIntoView({block:"center",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+    return;
+  }
+  if(bad.length){
+    out.classList.remove("on");
+    msg.className="msg on bad";
+    msg.textContent=`Corrija ${bad.length===1?"o campo":"os campos"}: ${bad.map(k=>LABEL[k]).join(", ")}.`;
+    if(bad.some(k=>k==="profitInjector"||k==="tokenUri")) $("adv").open=true;
+    const first=document.querySelector(`[data-f="${ALL.find(k=>r.E[k])}"]`);
+    first.scrollIntoView({block:"center",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+    return;
+  }
+  const v=(id)=>$(id).value.trim();
+  const args={
+    token_name:v("tokenName"), token_symbol:v("tokenSymbol").toUpperCase(), decimals:r.dec,
+    entity_id:r.eid.toString(), contract_number:r.cn.toString(),
+    company_name:v("companyName"), address:v("address"), phone:v("phone"), country:v("country"),
+    directors_names:v("directorsNames"), payer_name:v("payerName"),
+    verum_wallet_address:v("verumWallet"),
+    initial_pool_amount:r.pool.toString(), hard_cap:cap().toString(),
+    min_buy:r.mn.toString(), max_buy:r.mx.toString(), max_wallet:r.mw.toString(),
+    platform_fee:119,
+    profit_injector:r.inj||"(carteira conectada)", charge_fee_on_profit:$("feeOnProfit").checked
+  };
+  if(r.uri) args.token_uri=r.uri;
+  delete args.token_uri;
+  const activate={token_uri:r.uri||"(link permanente gerado ao hospedar a imagem)", image_sha256:LOGO_HASH};
+  const permanente={name:args.token_name,symbol:args.token_symbol,image:`(arquivo: ${IMG.logo.name})`};
+  const perfil={banner:IMG.banner? `(arquivo: ${IMG.banner.name})` : null, site:r.site||null, telegram:r.tg||null, x:r.tw||null};
+  $("json").textContent=JSON.stringify({initialize_entity_vault:args,activate_entity_vault:activate,identidade_permanente:permanente,perfil_editavel:perfil},null,2);
+  out.classList.add("on");
+  msg.className="msg on ok";
+  msg.textContent="Dados válidos. Nesta pré-visualização a carteira ainda não está ligada, então nada foi enviado.";
+  msg.scrollIntoView({block:"center",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+}
+
+function bindImage(kind){
+  const box=$(kind+"Box"), img=$(kind+"Img"), file=$(kind+"File"), clear=$(kind+"Clear");
+  const nome= kind==="banner"? "O banner" : "A imagem da moeda";
+  file.addEventListener("change",()=>{
+    const f=file.files&&file.files[0]; if(!f) return;
+    const err=$("imgErr"); err.textContent="";
+    if(!/^image\/(png|jpeg|webp)$/.test(f.type)){ err.textContent=`${nome} precisa ser PNG, JPG ou WebP.`; file.value=""; return; }
+    if(f.size>5*1024*1024){ err.textContent=`${nome} tem ${(f.size/1048576).toFixed(1).replace(".",",")} MB. O limite é 5 MB.`; file.value=""; return; }
+    if(IMG[kind]) URL.revokeObjectURL(IMG[kind].url);
+    IMG[kind]={name:f.name,url:URL.createObjectURL(f)};
+    img.src=IMG[kind].url; box.classList.add("has"); clear.hidden=false;
+    if(kind==="logo"){
+      LOGO_HASH=null; $("fp").textContent="Calculando a impressão digital da imagem…";
+      const mine=IMG.logo;
+      f.arrayBuffer().then(buf=>crypto.subtle.digest("SHA-256",buf)).then(d=>{
+        if(IMG.logo!==mine) return;
+        LOGO_HASH=[...new Uint8Array(d)].map(b=>b.toString(16).padStart(2,"0")).join("");
+        $("fp").textContent="Impressão digital (SHA-256) que vai para a blockchain: "+LOGO_HASH;
+      }).catch(()=>{ if(IMG.logo===mine) $("fp").textContent="Não foi possível calcular a impressão digital neste navegador."; });
+    }
+    $("out").classList.remove("on"); $("msg").className="msg";
+  });
+  clear.addEventListener("click",()=>{
+    if(IMG[kind]) URL.revokeObjectURL(IMG[kind].url);
+    IMG[kind]=null; img.removeAttribute("src"); box.classList.remove("has"); clear.hidden=true; file.value="";
+    if(kind==="logo"){ LOGO_HASH=null; $("fp").textContent=""; }
+    $("out").classList.remove("on"); $("msg").className="msg";
+  });
+}
+bindImage("banner"); bindImage("logo");
+$("f").addEventListener("submit",submit);
+$("f").addEventListener("input",()=>{ $("msg").className="msg"; $("out").classList.remove("on"); if($("agree").checked) $("agreeBox").classList.remove("err"); paint(); });
+$("connect-top").onclick=()=>submit();
+$("copy").onclick=async()=>{
+  const b=$("copy");
+  try{ await navigator.clipboard.writeText($("json").textContent); b.textContent="Copiado"; }
+  catch(_){ b.textContent="Selecione o texto e copie"; }
+  setTimeout(()=>{b.textContent="Copiar parâmetros";},1800);
+};
+paint();
+</script>
+</body>
+</html>

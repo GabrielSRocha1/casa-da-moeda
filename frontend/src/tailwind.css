@@ -1,0 +1,4 @@
+/* Entrada do Tailwind. Não edite assets/app.css à mão: rode npm run build:css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

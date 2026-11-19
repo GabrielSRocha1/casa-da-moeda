@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casa da Moeda Master Digital — Utility Tokens da Comunidade</title>
+
+  <!-- Favicon: mesma marca exibida no cabeçalho -->
+  <link rel="icon" type="image/png" href="./logo-128px-MD.png" />
+  <link rel="apple-touch-icon" href="./logo-128px-MD.png" />
+  <meta name="description" content="Casa da Moeda Master Digital: compre Bode Coin, Verum Coin e Escoteiros Coin em P2P com auto-custódia na Verum Wallet e solicite a parceria para tokenizar sua instituição." />
+
+  <!-- Variáveis públicas geradas do .env (Supabase). Veja scripts/env.mjs -->
+  <script src="./assets/env.js"></script>
+
+  <!-- Autenticação: exige login antes de exibir o site -->
+  <script src="./assets/auth.js"></script>
+  <script>CMMDAuth.requireAuth();</script>
+
+  <!-- Internacionalização (PT-BR / ES / EN) -->
+  <script src="./assets/i18n.js"></script>
+  <script src="./assets/qrcode.min.js"></script>
+
+  <!-- Supabase: configure no .env da raiz do projeto (gera assets/env.js).
+       Estas metas são apenas fallback legado. NUNCA coloque a chave service_role aqui. -->
+  <meta name="cmmd-supabase-url" content="" />
+  <meta name="cmmd-supabase-anon-key" content="" />
+
+  <!-- Tipografia (aprimoramento progressivo: se não carregar, usa a fonte do sistema) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind compilado localmente (sem CDN). Gerado por: npm run build:css
+       Paleta e fontes em tailwind.config.js. -->
+  <link rel="stylesheet" href="./assets/app.css" />
+
+  <style>
+    /* Estilos complementares (independentes do Tailwind) */
+    html { scroll-behavior: smooth; }
+    body { -webkit-font-smoothing: antialiased; }
+
+    /* Carrossel */
+    .carousel-track { transition: transform 600ms cubic-bezier(.22,.8,.24,1); will-change: transform; }
+
+    /* Dropdown P2P: animação de altura */
+    .collapse-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 450ms ease; }
+    .collapse-panel.is-open { grid-template-rows: 1fr; }
+    .collapse-panel > .collapse-inner { overflow: hidden; }
+    .chevron { transition: transform 300ms ease; }
+    [aria-expanded="true"] .chevron { transform: rotate(180deg); }
+
+    /* Modais */
+    .modal { opacity: 0; pointer-events: none; transition: opacity 250ms ease; }
+    .modal.is-open { opacity: 1; pointer-events: auto; }
+    .modal .modal-card { transform: translateY(16px) scale(.98); transition: transform 300ms ease; }
+    .modal.is-open .modal-card { transform: none; }
+
+    /* Toasts */
+    .toast { animation: toast-in 300ms ease both; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    /* Pulso de preço */
+    .flash-up { animation: flash-up 900ms ease; }
+    .flash-down { animation: flash-down 900ms ease; }
+    @keyframes flash-up { 0% { color: #16A34A; } 100% { color: inherit; } }
+    @keyframes flash-down { 0% { color: #DC2626; } 100% { color: inherit; } }
+
+    /* Fundo decorativo do hero */
+    .hero-bg {
+      background:
+        radial-gradient(800px 400px at 85% -10%, rgba(245,196,0,.35), transparent 60%),
+        radial-gradient(600px 300px at -10% 110%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(135deg, #082B63 0%, #0B4AA8 100%);
+    }
+
+    /* Etapas do status de pagamento */
+    .step-dot { transition: background-color 300ms ease, border-color 300ms ease; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+    }
+
+    /* Seletor de idiomas */
+    .lang-switch { display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(245,196,0,.45); border-radius: 9999px; padding: 2px; background: rgba(255,255,255,.08); }
+    .cmmd-lang-btn { cursor: pointer; border: 0; background: transparent; color: rgba(255,255,255,.75); font: inherit; font-size: 12px; font-weight: 700; line-height: 1; padding: 5px 9px; border-radius: 9999px; transition: background-color .2s, color .2s; }
+    .cmmd-lang-btn:hover { color: #fff; }
+    .cmmd-lang-btn.is-active { background: #F5C400; color: #082B63; }
+  </style>
+</head>
+
+<body class="bg-white font-sans text-ink">
+
+  <!-- ===================================================== -->
+  <!-- CABEÇALHO                                              -->
+  <!-- ===================================================== -->
+  <header class="sticky top-0 z-40 border-b border-casa-gold/40 bg-casa-navy/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <a href="#inicio" class="flex items-center gap-3" aria-label="Casa da Moeda Master Digital — início">
+        <!-- Marca Mastter Digital -->
+        <img src="./logo-128px-MD.png" width="40" height="40" alt="Mastter Digital" class="h-10 w-10 rounded-full" />
+        <span class="leading-tight">
+          <span class="block font-display text-base font-bold text-white sm:text-lg">Casa da Moeda</span>
+          <span class="block text-[11px] font-semibold uppercase tracking-[0.2em] text-casa-gold">Master Digital</span>
+        </span>
+      </a>
+
+      <nav class="hidden items-center gap-6 text-sm font-medium text-white/80 md:flex" aria-label="Navegação principal">
+        <a href="painel.html" class="font-semibold text-casa-gold hover:text-white">Painel</a>
+        <a href="#ativos" class="hover:text-casa-gold">Ativos nativos</a>
+        <a href="#p2p" class="hover:text-casa-gold">Mesa OTC</a>
+        <a href="#b2b" class="hover:text-casa-gold">Para negócios</a>
+        <a href="contrato.html" class="hover:text-casa-gold">Contrato</a>
+        <a href="#aviso" class="hover:text-casa-gold">Aviso legal</a>
+      </nav>
+
+      <div class="lang-switch ml-auto md:ml-0" data-i18n-skip aria-label="Idioma / Language"></div>
+
+      <button type="button" data-open-b2b
+        class="hidden rounded-xl bg-casa-gold px-4 py-2.5 text-sm font-bold text-casa-navy shadow transition hover:brightness-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-gold/50 sm:inline-flex">
+        Crie o Utility Token do seu Negócio
+      </button>
+      <button type="button" data-open-b2b
+        class="inline-flex rounded-xl bg-casa-gold px-3 py-2 text-xs font-bold text-casa-navy sm:hidden">
+        Criar token
+      </button>
+    </div>
+  </header>
+
+  <main id="inicio">
+
+    <!-- ===================================================== -->
+    <!-- HERO                                                  -->
+    <!-- ===================================================== -->
+    <section class="hero-bg text-white">
+      <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-2 lg:pb-24 lg:pt-20">
+        <div>
+          <span class="inline-flex items-center gap-2 rounded-full border border-casa-gold/50 bg-white/10 px-3 py-1 text-xs font-semibold text-casa-gold">
+            <span class="h-2 w-2 rounded-full bg-up"></span> Utility Tokens da comunidade · Auto-custódia
+          </span>
+          <h1 class="mt-5 font-display text-4xl font-extrabold leading-tight sm:text-5xl">
+            A casa da moeda <span class="text-casa-gold">da sua comunidade</span>, 100% digital.
+          </h1>
+          <p class="mt-5 max-w-xl text-base text-white/80 sm:text-lg">
+            Adquira os ativos nativos da plataforma na Mesa OTC, receba direto na sua Verum Wallet e crie o token de utilidade do seu negócio, evento, time ou ONG.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="#ativos" class="rounded-xl bg-up px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-up-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-up/40">Ver ativos nativos</a>
+            <button type="button" data-open-b2b class="rounded-xl border-2 border-casa-gold px-5 py-3 font-semibold text-casa-gold transition hover:bg-casa-gold hover:text-casa-navy">Crie o Utility Token do seu Negócio</button>
+          </div>
+        </div>
+
+        <!-- Resumo rápido dos ativos (atualizado pelo mesmo motor de preços do carrossel) -->
+        <div class="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur sm:p-6">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="font-display text-lg font-bold">Painel de referência</h2>
+            <span class="text-xs text-white/60">Atualização simulada · <span id="lastUpdate" data-i18n-skip>agora</span></span>
+          </div>
+          <ul id="tickerList" class="divide-y divide-white/10"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- CARROSSEL DE ATIVOS NATIVOS                           -->
+    <!-- ===================================================== -->
+    <section id="ativos" class="scroll-mt-20 bg-casa-sky py-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-widest text-casa-blue">Ativos nativos</p>
+            <h2 class="mt-1 font-display text-3xl font-extrabold text-casa-navy">Bode, Verum e Escoteiros</h2>
+            <p class="mt-2 max-w-2xl text-ink">Os três utility tokens que movimentam o ecossistema Casa da Moeda Master Digital.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" id="carouselPrev" aria-label="Ativo anterior"
+              class="grid h-11 w-11 place-items-center rounded-full border border-casa-blue/20 bg-white text-casa-navy shadow transition hover:bg-casa-gold focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-blue/30">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button type="button" id="carouselNext" aria-label="Próximo ativo"
+              class="grid h-11 w-11 place-items-center rounded-full border border-casa-blue/20 bg-white text-casa-navy shadow transition hover:bg-casa-gold focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-blue/30">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="carousel" class="relative overflow-hidden rounded-3xl" role="region" aria-roledescription="carrossel" aria-label="Ativos nativos" tabindex="0">
+          <div id="carouselTrack" class="carousel-track flex"></div>
+        </div>
+
+        <div id="carouselDots" class="mt-6 flex justify-center gap-2" role="tablist" aria-label="Selecionar ativo"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- MÓDULO P2P (DROPDOWN RETRÁTIL)                         -->
+    <!-- ===================================================== -->
+    <section id="p2p" class="scroll-mt-20 bg-white py-16">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <div class="overflow-hidden rounded-3xl border border-casa-blue/15 shadow-card">
+          <button type="button" id="p2pToggle" aria-expanded="false" aria-controls="p2pPanel"
+            class="flex w-full items-center justify-between gap-4 bg-casa-blue px-5 py-5 text-left text-white transition hover:bg-casa-navy focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-gold/60 sm:px-7">
+            <span class="flex items-center gap-4">
+              <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-casa-gold text-casa-navy">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>
+              </span>
+              <span>
+                <span class="block font-display text-lg font-bold">Mesa OTC — compre ativo</span>
+                <span class="block text-sm text-white/75">Receba direto na sua Verum Wallet</span>
+              </span>
+            </span>
+            <svg class="chevron shrink-0" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+
+          <div id="p2pPanel" class="collapse-panel" role="region" aria-labelledby="p2pToggle">
+            <div class="collapse-inner">
+              <form id="p2pForm" class="grid gap-5 bg-white px-5 py-6 sm:px-7" novalidate>
+
+                <!-- Ativo -->
+                <div>
+                  <label for="p2pAsset" class="mb-1.5 block text-sm font-semibold text-ink-strong">Ativo</label>
+                  <select id="p2pAsset" name="asset" class="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15">
+                    <option value="BDC">Bode Coin (BDC)</option>
+                    <option value="VRC">Verum Coin (VRC)</option>
+                    <option value="ESCT">Escoteiros Coin (ESCT)</option>
+                  </select>
+                </div>
+
+                <!-- Outra cripto (aparece só quando "Outra" é selecionada) -->
+                <div id="p2pOtherWrap" class="hidden">
+                  <label for="p2pOther" class="mb-1.5 block text-sm font-semibold text-ink-strong">Qual cripto você deseja?</label>
+                  <input id="p2pOther" name="other" type="text" maxlength="40" placeholder="Ex.: ETH, BNB, MATIC..."
+                    class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                  <p class="field-error mt-1 hidden text-sm text-down" data-for="p2pOther"></p>
+                </div>
+
+                <!-- Valor -->
+                <div>
+                  <label for="p2pAmount" class="mb-1.5 block text-sm font-semibold text-ink-strong">Valor da aquisição (BRL)</label>
+                  <div class="relative">
+                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-semibold text-ink-soft">R$</span>
+                    <input id="p2pAmount" name="amount" type="text" inputmode="numeric" autocomplete="off" placeholder="0,00"
+                      class="w-full rounded-xl border border-gray-300 py-3 pl-12 pr-4 text-lg font-semibold text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-2" aria-label="Valores rápidos">
+                    <button type="button" class="quick-amount rounded-lg bg-casa-sky px-3 py-1.5 text-sm font-semibold text-casa-blue hover:bg-casa-gold hover:text-casa-navy" data-value="100">R$ 100</button>
+                    <button type="button" class="quick-amount rounded-lg bg-casa-sky px-3 py-1.5 text-sm font-semibold text-casa-blue hover:bg-casa-gold hover:text-casa-navy" data-value="500">R$ 500</button>
+                    <button type="button" class="quick-amount rounded-lg bg-casa-sky px-3 py-1.5 text-sm font-semibold text-casa-blue hover:bg-casa-gold hover:text-casa-navy" data-value="1000">R$ 1.000</button>
+                    <button type="button" class="quick-amount rounded-lg bg-casa-sky px-3 py-1.5 text-sm font-semibold text-casa-blue hover:bg-casa-gold hover:text-casa-navy" data-value="5000">R$ 5.000</button>
+                  </div>
+                  <p class="mt-1 text-xs text-ink-soft">Mínimo R$ 20,00 · máximo R$ 50.000,00 por ordem.</p>
+                  <p class="field-error mt-1 hidden text-sm text-down" data-for="p2pAmount"></p>
+                </div>
+
+                <!-- Endereço Verum Wallet -->
+                <div>
+                  <label for="p2pWallet" class="mb-1.5 block text-sm font-semibold text-ink-strong">Endereço público da sua Verum Wallet</label>
+                  <div class="flex gap-2">
+                    <input id="p2pWallet" name="wallet" type="text" autocomplete="off" spellcheck="false" placeholder="Cole aqui seu endereço público"
+                      class="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 font-mono text-sm text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                    <button type="button" id="p2pPaste" class="shrink-0 rounded-xl border border-casa-blue/30 px-4 text-sm font-semibold text-casa-blue hover:bg-casa-sky">Colar</button>
+                  </div>
+                  <p class="mt-1 text-xs text-ink-soft">Auto-custódia exclusiva: os ativos vão direto para a sua carteira. Nunca informe sua frase-semente (seed phrase).</p>
+                  <p class="field-error mt-1 hidden text-sm text-down" data-for="p2pWallet"></p>
+                </div>
+
+                <!-- Resumo estimado -->
+                <div class="rounded-2xl border border-casa-gold/60 bg-casa-sun p-4">
+                  <dl class="grid grid-cols-2 gap-y-2 text-sm">
+                    <dt class="text-ink">Cotação de referência</dt><dd id="sumPrice" data-i18n-skip class="text-right font-semibold text-ink-strong">—</dd>
+                    <dt class="text-ink">Taxa da Mesa OTC (1,5%)</dt><dd id="sumFee" data-i18n-skip class="text-right font-semibold text-ink-strong">—</dd>
+                    <dt class="text-ink">Você recebe (estimado)</dt><dd id="sumQty" data-i18n-skip class="text-right font-display text-base font-bold text-casa-navy">—</dd>
+                  </dl>
+                </div>
+
+                <label class="flex items-start gap-3 text-sm text-ink">
+                  <input id="p2pTerms" type="checkbox" class="mt-0.5 h-5 w-5 rounded border-gray-300 text-up focus:ring-up" />
+                  <span>Confirmo que o endereço é da minha própria Verum Wallet e li o aviso: utility tokens não garantem lucro.</span>
+                </label>
+                <p class="field-error -mt-3 hidden text-sm text-down" data-for="p2pTerms"></p>
+
+                <button type="submit" id="p2pSubmit"
+                  class="w-full rounded-xl bg-up px-6 py-4 font-display text-lg font-bold text-white shadow-lg transition hover:bg-up-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-up/40">
+                  Realizar Pagamento OTC
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================== -->
+    <!-- CHAMADA B2B — SOLICITAÇÃO DE PARCERIA                  -->
+    <!-- ===================================================== -->
+    <section id="b2b" class="scroll-mt-20 bg-casa-sun py-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="grid items-start gap-10 lg:grid-cols-[1fr_1.15fr]">
+          <div>
+            <p class="text-sm font-bold uppercase tracking-widest text-casa-blue">Parcerias institucionais</p>
+            <h2 class="mt-1 font-display text-3xl font-extrabold text-casa-navy">Crie o Utility Token do seu Negócio</h2>
+            <p class="mt-3 text-ink">
+              Empresas, eventos, times, igrejas, clubes, fraternidades e ONGs podem ter o próprio token de utilidade.
+              Você envia os dados da instituição, nossa equipe avalia o projeto e agenda um alinhamento com o responsável.
+            </p>
+            <ol class="mt-6 grid gap-3 text-sm sm:grid-cols-3">
+              <li class="rounded-2xl border border-casa-blue/15 bg-white p-4">
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-casa-blue font-bold text-white">1</span>
+                <span class="mt-2 block font-semibold text-casa-navy">Envie a solicitação</span>
+                <span class="mt-1 block text-ink">Dados da instituição e do responsável.</span>
+              </li>
+              <li class="rounded-2xl border border-casa-blue/15 bg-white p-4">
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-casa-blue font-bold text-white">2</span>
+                <span class="mt-2 block font-semibold text-casa-navy">Avaliação da equipe</span>
+                <span class="mt-1 block text-ink">Analisamos a utilidade e a viabilidade.</span>
+              </li>
+              <li class="rounded-2xl border border-casa-blue/15 bg-white p-4">
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-casa-gold font-bold text-casa-navy">3</span>
+                <span class="mt-2 block font-semibold text-casa-navy">Reunião de alinhamento</span>
+                <span class="mt-1 block text-ink">No dia e horário que você indicar.</span>
+              </li>
+            </ol>
+            <button type="button" data-open-b2b
+              class="mt-6 inline-flex items-center gap-2 rounded-xl bg-casa-blue px-6 py-4 font-display text-lg font-bold text-white shadow-lg ring-4 ring-casa-gold transition hover:bg-casa-navy focus:outline-none focus-visible:ring-casa-navy">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Crie o Utility Token do seu Negócio
+            </button>
+          </div>
+          <div>
+            <p class="mb-3 text-sm font-semibold text-casa-navy">Escolha o ramo da sua instituição:</p>
+            <div id="sectorShowcase" class="grid grid-cols-2 gap-3 sm:grid-cols-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================== -->
+  <!-- RODAPÉ                                                 -->
+  <!-- ===================================================== -->
+  <footer id="aviso" class="scroll-mt-20 bg-casa-navy text-white/70">
+    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div class="flex flex-wrap items-center justify-between gap-6">
+        <div>
+          <p class="font-display text-lg font-bold text-white">Casa da Moeda <span class="text-casa-gold">Master Digital</span></p>
+          <p class="mt-1 text-sm">Plataforma comunitária de utility tokens com auto-custódia.</p>
+        </div>
+        <p class="text-sm">© <span id="year"></span> Casa da Moeda Master Digital</p>
+      </div>
+      <div class="mt-8 rounded-2xl border border-casa-gold/40 bg-white/5 p-5 text-sm leading-relaxed">
+        <p class="disclaimer-text"></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================== -->
+  <!-- MODAL: PAGAMENTO P2P (SIMULADO)                        -->
+  <!-- ===================================================== -->
+  <div id="payModal" class="modal fixed inset-0 z-50 flex items-end justify-center bg-casa-navy/70 p-0 sm:items-center sm:p-4" aria-hidden="true">
+    <div class="modal-card flex max-h-[100dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[92vh] sm:rounded-3xl" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+      <div class="flex items-center justify-between bg-casa-blue px-5 py-4 text-white">
+        <div>
+          <h3 id="payTitle" class="font-display text-lg font-bold">Pagamento OTC via Pix</h3>
+          <p class="text-xs text-white/75">Ordem <span id="payOrderId" data-i18n-skip class="font-mono">—</span></p>
+        </div>
+        <button type="button" data-close-modal class="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto px-5 py-5">
+        <div class="mb-4 rounded-xl border border-casa-gold bg-casa-sun px-3 py-2 text-center text-xs font-semibold text-casa-navy">
+          Pague com o app do seu banco: escaneie o QR Code ou use o Pix copia e cola.<br>
+          Chave Pix: <span data-i18n-skip class="font-mono">mastter.digital@gmail.com</span>
+        </div>
+
+        <!-- Status da ordem -->
+        <ol id="payStatus" class="mb-5 grid grid-cols-4 gap-2 text-center text-[11px] font-semibold text-ink-soft"></ol>
+
+        <!-- Área do QR Code (etapa aguardando) -->
+        <div id="payQrArea">
+          <div class="flex flex-col items-center">
+            <div class="relative rounded-2xl border-4 border-casa-blue p-2">
+              <canvas id="payQr" width="232" height="232" class="h-52 w-52" aria-label="QR Code Pix"></canvas>
+            </div>
+            <p class="mt-3 text-sm text-ink">Expira em <span id="payTimer" data-i18n-skip class="font-mono font-bold text-casa-navy">15:00</span></p>
+          </div>
+          <label for="payCopyCode" class="mb-1 mt-4 block text-xs font-semibold text-ink-strong">Pix copia e cola</label>
+          <div class="flex gap-2">
+            <input id="payCopyCode" readonly data-i18n-skip class="min-w-0 flex-1 rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 font-mono text-xs text-ink" />
+            <button type="button" id="payCopyBtn" class="shrink-0 rounded-xl bg-casa-blue px-4 text-sm font-semibold text-white hover:bg-casa-navy">Copiar</button>
+          </div>
+        </div>
+
+        <!-- Área de conclusão -->
+        <div id="payDoneArea" class="hidden text-center">
+          <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-up-soft text-up">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <p class="mt-3 font-display text-xl font-bold text-casa-navy">Enviado para sua Verum Wallet</p>
+          <p class="mt-1 text-sm text-ink">Transação simulada:</p>
+          <p id="payTxHash" data-i18n-skip class="mt-1 break-all rounded-lg bg-gray-50 px-3 py-2 font-mono text-xs text-ink-strong"></p>
+        </div>
+
+        <!-- Resumo -->
+        <dl class="mt-5 grid grid-cols-2 gap-y-2 rounded-2xl bg-casa-sky p-4 text-sm">
+          <dt class="text-ink">Ativo</dt><dd id="payAsset" data-i18n-skip class="text-right font-semibold text-ink-strong"></dd>
+          <dt class="text-ink">Valor</dt><dd id="payAmount" data-i18n-skip class="text-right font-semibold text-ink-strong"></dd>
+          <dt class="text-ink">Recebe (est.)</dt><dd id="payQty" data-i18n-skip class="text-right font-semibold text-ink-strong"></dd>
+          <dt class="text-ink">Destino</dt><dd id="payWallet" data-i18n-skip class="truncate text-right font-mono text-xs text-ink-strong"></dd>
+        </dl>
+      </div>
+
+      <div id="payActions" class="grid grid-cols-2 gap-3 border-t border-gray-100 px-5 py-4">
+        <button type="button" id="payCancel" class="rounded-xl bg-down px-4 py-3 font-semibold text-white hover:bg-down-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-down/40">Cancelar ordem</button>
+        <button type="button" id="payConfirm" class="rounded-xl bg-up px-4 py-3 font-semibold text-white hover:bg-up-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-up/40">Já fiz o pagamento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- MODAL: SOLICITAÇÃO DE PARCERIA / ONBOARDING B2B        -->
+  <!-- ===================================================== -->
+  <div id="b2bModal" data-autofocus="desktop" class="modal fixed inset-0 z-50 flex items-end justify-center bg-casa-navy/70 p-0 sm:items-center sm:p-4" aria-hidden="true">
+    <div class="modal-card flex max-h-[100dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[94vh] sm:rounded-3xl" role="dialog" aria-modal="true" aria-labelledby="b2bTitle">
+
+      <!-- Cabeçalho -->
+      <div class="bg-casa-navy px-5 py-4 text-white sm:px-7">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-casa-gold">Onboarding B2B</p>
+            <h3 id="b2bTitle" class="font-display text-lg font-bold sm:text-xl">Solicitação de Parceria</h3>
+            <p class="mt-0.5 text-xs text-white/70 sm:text-sm">Envie os dados da sua instituição. Nossa equipe avalia e entra em contato para o alinhamento.</p>
+          </div>
+          <button type="button" data-close-modal class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Fechar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Corpo: card de vantagens + formulário -->
+      <div class="min-h-0 flex-1 overflow-y-auto" id="pfScroll">
+        <div class="grid gap-0 lg:grid-cols-[minmax(280px,340px)_1fr]">
+
+          <!-- Card de vantagens -->
+          <aside class="border-b border-casa-gold/40 bg-casa-sky/60 p-4 sm:p-6 lg:border-b-0 lg:border-r" aria-labelledby="benefitsTitle">
+            <div class="rounded-2xl border-2 border-casa-gold bg-gradient-to-br from-white to-casa-sun p-5 shadow-sm ring-1 ring-casa-blue/10">
+              <div class="flex items-center gap-3">
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-casa-blue text-casa-gold shadow">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 8.9l6.6-.8z"/></svg>
+                </span>
+                <h4 id="benefitsTitle" class="font-display text-base font-bold leading-snug text-casa-navy sm:text-lg">
+                  Por que tokenizar sua instituição na Casa da Moeda Master Digital?
+                </h4>
+              </div>
+
+              <ol class="mt-5 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+                <li class="flex gap-3 rounded-xl border border-casa-blue/15 bg-white/80 p-3">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-casa-blue/10 text-casa-blue" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+                  </span>
+                  <div>
+                    <p class="text-sm font-bold text-casa-navy"><span class="text-casa-blue">1.</span> Ecossistema Crypto Master Digital</p>
+                    <p class="mt-0.5 text-sm text-ink">Suporte técnico e respaldo estratégico.</p>
+                  </div>
+                </li>
+                <li class="flex gap-3 rounded-xl border border-casa-blue/15 bg-white/80 p-3">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-casa-gold/30 text-casa-navy" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18M16 14.5h2"/><path d="M7 6V4.5A1.5 1.5 0 0 1 8.5 3h9"/></svg>
+                  </span>
+                  <div>
+                    <p class="text-sm font-bold text-casa-navy"><span class="text-casa-blue">2.</span> Integração com a Verum Wallet</p>
+                    <p class="mt-0.5 text-sm text-ink">Entrega direta dos ativos em carteiras de auto-custódia dos usuários.</p>
+                  </div>
+                </li>
+                <li class="flex gap-3 rounded-xl border border-casa-blue/15 bg-white/80 p-3">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-up-soft text-up-dark" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>
+                  </span>
+                  <div>
+                    <p class="text-sm font-bold text-casa-navy"><span class="text-casa-blue">3.</span> Ecossistema Global Pay</p>
+                    <p class="mt-0.5 text-sm text-ink">Soluções de pagamento integradas para utilidade real do token.</p>
+                  </div>
+                </li>
+              </ol>
+
+              <p class="mt-4 rounded-lg bg-casa-blue/5 px-3 py-2 text-xs text-ink">
+                Esta é uma solicitação de parceria: o token é estruturado junto com a nossa equipe, após avaliação.
+              </p>
+            </div>
+          </aside>
+
+          <!-- Formulário -->
+          <form id="pfForm" class="flex min-w-0 flex-col" novalidate>
+            <!-- Indicador de etapas -->
+            <div class="border-b border-gray-100 px-5 pt-5 sm:px-7">
+              <ol id="pfSteps" class="flex items-center gap-2 pb-4" aria-label="Etapas do cadastro"></ol>
+            </div>
+
+            <div class="px-5 py-6 sm:px-7">
+
+              <!-- ============ Seção 1: Instituição ============ -->
+              <fieldset data-pstep="1">
+                <legend class="font-display text-lg font-bold text-casa-navy">1. Dados da Instituição / Empresa</legend>
+                <p class="mt-1 text-sm text-ink">Campos com <span class="font-bold text-down">*</span> são obrigatórios.</p>
+
+                <div class="mt-5 grid gap-4">
+                  <div>
+                    <label for="pfCompanyName" class="mb-1.5 block text-sm font-semibold text-ink-strong">Nome da Empresa / Instituição <span class="text-down">*</span></label>
+                    <input id="pfCompanyName" name="company_name" type="text" maxlength="120" autocomplete="organization" placeholder="Ex.: Associação Cultural Vale do Sol"
+                      class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfCompanyName"></p>
+                  </div>
+
+                  <div>
+                    <label for="pfAddress" class="mb-1.5 block text-sm font-semibold text-ink-strong">Endereço completo da empresa <span class="text-down">*</span></label>
+                    <textarea id="pfAddress" name="company_address" rows="2" maxlength="300" autocomplete="street-address" placeholder="Rua, número, bairro, cidade, estado/departamento, CEP e país"
+                      class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15"></textarea>
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfAddress"></p>
+                  </div>
+
+                  <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label for="pfSector" class="mb-1.5 block text-sm font-semibold text-ink-strong">Ramo de Atuação <span class="text-down">*</span></label>
+                      <select id="pfSector" name="business_sector"
+                        class="pf-input w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15">
+                        <option value="">Selecione…</option>
+                      </select>
+                      <p class="field-error mt-1 hidden text-sm text-down" data-for="pfSector"></p>
+                    </div>
+                    <div id="pfSectorOtherWrap" class="hidden">
+                      <label for="pfSectorOther" class="mb-1.5 block text-sm font-semibold text-ink-strong">Qual ramo? <span class="text-down">*</span></label>
+                      <input id="pfSectorOther" name="business_sector_other" type="text" maxlength="80" placeholder="Ex.: Cooperativa agrícola"
+                        class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                      <p class="field-error mt-1 hidden text-sm text-down" data-for="pfSectorOther"></p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="pfDescription" class="mb-1.5 block text-sm font-semibold text-ink-strong">Breve descrição da instituição e do ramo em que atua <span class="text-down">*</span></label>
+                    <textarea id="pfDescription" name="company_description" rows="4" maxlength="800" placeholder="O que a instituição faz, para quem, há quanto tempo e como imagina usar um token de utilidade."
+                      class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15"></textarea>
+                    <div class="mt-1 flex justify-between text-xs text-ink-soft"><span>Mínimo de 30 caracteres.</span><span><span id="pfDescriptionCount" data-i18n-skip>0</span>/800</span></div>
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfDescription"></p>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- ============ Seção 2: Responsável ============ -->
+              <fieldset data-pstep="2" class="hidden">
+                <legend class="font-display text-lg font-bold text-casa-navy">2. Dados do Tomador de Decisão</legend>
+                <p class="mt-1 text-sm text-ink">Diretor(a) ou responsável que decide pela instituição.</p>
+
+                <div class="mt-5 grid gap-4">
+                  <div>
+                    <label for="pfDirector" class="mb-1.5 block text-sm font-semibold text-ink-strong">Nome completo do Diretor / Responsável <span class="text-down">*</span></label>
+                    <input id="pfDirector" name="director_name" type="text" maxlength="120" autocomplete="name" placeholder="Nome e sobrenome"
+                      class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfDirector"></p>
+                  </div>
+
+                  <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label for="pfWhatsapp" class="mb-1.5 block text-sm font-semibold text-ink-strong">WhatsApp de contato direto <span class="text-down">*</span></label>
+                      <div class="flex gap-2">
+                        <select id="pfWhatsappDdi" aria-label="Código do país do WhatsApp" class="pf-ddi w-[5.5rem] shrink-0 rounded-xl border border-gray-300 bg-white px-2 py-3 text-sm text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15"></select>
+                        <input id="pfWhatsapp" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(11) 91234-5678"
+                          class="pf-input pf-phone min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" data-ddi="pfWhatsappDdi" />
+                      </div>
+                      <p class="field-error mt-1 hidden text-sm text-down" data-for="pfWhatsapp"></p>
+                    </div>
+                    <div>
+                      <label for="pfPhone" class="mb-1.5 block text-sm font-semibold text-ink-strong">Telefone fixo / celular alternativo</label>
+                      <div class="flex gap-2">
+                        <select id="pfPhoneDdi" aria-label="Código do país do telefone alternativo" class="pf-ddi w-[5.5rem] shrink-0 rounded-xl border border-gray-300 bg-white px-2 py-3 text-sm text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15"></select>
+                        <input id="pfPhone" name="alt_phone" type="tel" inputmode="tel" placeholder="Opcional"
+                          class="pf-input pf-phone min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" data-ddi="pfPhoneDdi" />
+                      </div>
+                      <p class="field-error mt-1 hidden text-sm text-down" data-for="pfPhone"></p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="pfEmail" class="mb-1.5 block text-sm font-semibold text-ink-strong">E-mail corporativo / pessoal <span class="text-down">*</span></label>
+                    <input id="pfEmail" name="email" type="email" maxlength="254" autocomplete="email" placeholder="diretoria@instituicao.com"
+                      class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfEmail"></p>
+                  </div>
+
+                  <div>
+                    <label for="pfApprover" class="mb-1.5 block text-sm font-semibold text-ink-strong">Você precisa de mais alguém para a permissão da criação? <span class="text-down">*</span></label>
+                    <select id="pfApprover" name="needs_creation_approver"
+                      class="pf-input w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15">
+                      <option value="NAO" selected>Não — eu mesmo(a) autorizo a criação</option>
+                      <option value="SIM">Sim — preciso de mais alguém para autorizar</option>
+                    </select>
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfApprover"></p>
+                  </div>
+
+                  <div id="pfApproverWhoWrap" class="hidden">
+                    <label for="pfApproverWho" class="mb-1.5 block text-sm font-semibold text-ink-strong">Quem é a pessoa que precisa autorizar? <span class="text-down">*</span></label>
+                    <input id="pfApproverWho" name="approver_name" type="text" maxlength="120" placeholder="Nome completo e cargo — ex.: Ana Lima, Presidente do Conselho"
+                      class="pf-input w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfApproverWho"></p>
+                  </div>
+                </div>
+              </fieldset>
+
+              <!-- ============ Seção 3: Disponibilidade ============ -->
+              <fieldset data-pstep="3" class="hidden">
+                <legend class="font-display text-lg font-bold text-casa-navy">3. Disponibilidade para Alinhamento</legend>
+                <p class="mt-1 text-sm text-ink">Quando nossa equipe pode falar com o responsável?</p>
+
+                <div class="mt-5 grid gap-5">
+                  <div>
+                    <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                      <span id="pfDaysLabel" class="text-sm font-semibold text-ink-strong">Dias da semana de preferência <span class="text-down">*</span></span>
+                      <span class="flex gap-2">
+                        <button type="button" class="pf-days-preset rounded-lg bg-casa-sky px-3 py-1 text-xs font-semibold text-casa-blue hover:bg-casa-gold hover:text-casa-navy" data-days="SEG,TER,QUA,QUI,SEX">Segunda a Sexta</button>
+                        <button type="button" class="pf-days-preset rounded-lg bg-casa-sky px-3 py-1 text-xs font-semibold text-casa-blue hover:bg-casa-gold hover:text-casa-navy" data-days="SEG,TER,QUA,QUI,SEX,SAB,DOM">Todos</button>
+                      </span>
+                    </div>
+                    <div id="pfDays" class="grid grid-cols-4 gap-2 sm:grid-cols-7" role="group" aria-labelledby="pfDaysLabel"></div>
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfDays"></p>
+                  </div>
+
+                  <div>
+                    <span id="pfPeriodsLabel" class="mb-2 block text-sm font-semibold text-ink-strong">Horários disponíveis para contato/reunião <span class="text-down">*</span></span>
+                    <div id="pfPeriods" class="grid gap-2 sm:grid-cols-3" role="group" aria-labelledby="pfPeriodsLabel"></div>
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfPeriods"></p>
+                  </div>
+
+                  <div class="rounded-2xl border border-gray-200 p-4">
+                    <p class="text-sm font-semibold text-ink-strong">Faixa de horário específica <span class="font-normal text-ink-soft">(opcional)</span></p>
+                    <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                      <div>
+                        <label for="pfTimeFrom" class="mb-1 block text-xs font-semibold text-ink">Das</label>
+                        <input id="pfTimeFrom" type="time" step="900" class="pf-input w-full rounded-xl border border-gray-300 px-3 py-2.5 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                      </div>
+                      <div>
+                        <label for="pfTimeTo" class="mb-1 block text-xs font-semibold text-ink">Até</label>
+                        <input id="pfTimeTo" type="time" step="900" class="pf-input w-full rounded-xl border border-gray-300 px-3 py-2.5 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+                      </div>
+                      <div>
+                        <label for="pfTimezone" class="mb-1 block text-xs font-semibold text-ink">Fuso horário</label>
+                        <select id="pfTimezone" class="pf-input w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15"></select>
+                      </div>
+                    </div>
+                    <p class="field-error mt-1 hidden text-sm text-down" data-for="pfTimeTo"></p>
+                  </div>
+
+                  <label class="flex items-start gap-3 text-sm text-ink">
+                    <input id="pfConsent" type="checkbox" class="mt-0.5 h-5 w-5 shrink-0 rounded border-gray-300 text-up focus:ring-up" />
+                    <span>Autorizo a Casa da Moeda Master Digital a usar estes dados exclusivamente para avaliar a parceria e entrar em contato pelos canais informados (LGPD).</span>
+                  </label>
+                  <p class="field-error -mt-3 hidden text-sm text-down" data-for="pfConsent"></p>
+                </div>
+              </fieldset>
+
+              <!-- ============ Sucesso ============ -->
+              <div data-pstep="done" class="hidden py-4 text-center" role="status" aria-live="polite">
+                <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-up-soft text-up">
+                  <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <p class="mt-4 font-display text-2xl font-bold text-casa-navy">Solicitação enviada com sucesso!</p>
+                <p class="mt-1 text-ink">Protocolo <span id="pfProtocol" data-i18n-skip class="font-mono font-bold text-casa-navy"></span></p>
+                <p id="pfSuccessText" data-i18n-skip class="mx-auto mt-4 max-w-lg rounded-2xl border border-up/30 bg-up-soft/60 px-4 py-3 text-sm text-ink-strong"></p>
+                <p id="pfDemoNote" data-i18n-skip class="mx-auto mt-3 hidden max-w-lg rounded-xl border border-casa-gold bg-casa-sun px-3 py-2 text-xs text-casa-navy"></p>
+              </div>
+
+              <!-- Alerta de erro de envio -->
+              <div id="pfSubmitError" data-i18n-skip class="mt-5 hidden rounded-xl border-l-4 border-down bg-down-soft px-4 py-3 text-sm font-semibold text-down-dark" role="alert"></div>
+            </div>
+
+            <!-- Rodapé de ações -->
+            <div id="pfActions" class="mt-auto flex items-center justify-between gap-3 border-t border-gray-100 bg-white px-5 py-4 sm:px-7">
+              <button type="button" id="pfBack" class="rounded-xl border border-down/40 px-5 py-3 font-semibold text-down hover:bg-down-soft">Cancelar</button>
+              <button type="button" id="pfNext" class="inline-flex items-center gap-2 rounded-xl bg-up px-6 py-3 font-semibold text-white shadow hover:bg-up-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-up/40 disabled:cursor-wait disabled:opacity-70">Continuar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área de notificações -->
+  <div id="toasts" class="pointer-events-none fixed right-4 top-20 z-[60] flex w-[min(92vw,360px)] flex-col gap-2" aria-live="polite"></div>
+
+  <!-- ===================================================== -->
+  <!-- JAVASCRIPT                                             -->
+  <!-- ===================================================== -->
+  <script>
+  (function () {
+    'use strict';
+
+    /** Atalho de tradução (PT/ES/EN). Cai no texto original se o i18n falhar. */
+    const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+    const curLang = () => (window.I18N ? window.I18N.lang : 'pt');
+
+    /* -------------------------------------------------------
+       1. CONSTANTES E DADOS
+       ------------------------------------------------------- */
+
+    /** Texto legal obrigatório — mantido exatamente como especificado. */
+    const DISCLAIMER = 'Aviso importante: O investimento em ativos digitais oferecidos nesta plataforma não garante lucro. Os ativos listados são estritamente Utility Tokens (tokens de utilidade), não possuindo valor imobiliário, mobiliário ou de garantia financeira. Sua finalidade é exclusivamente educacional, comunitária e de uso interno no ecossistema. A valorização ou flutuação do ativo depende exclusivamente do engajamento e comprimento da comunidade.';
+
+    /** Ícones originais dos ativos nativos (SVG inline). */
+    const ICONS = {
+      BDC: '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#F5C400"/><circle cx="32" cy="32" r="25" fill="none" stroke="#082B63" stroke-width="2" opacity=".35"/><path d="M20 18c-4 2-6 7-4 11M44 18c4 2 6 7 4 11" fill="none" stroke="#082B63" stroke-width="3.4" stroke-linecap="round"/><path d="M22 26c0-3 4-5 10-5s10 2 10 5l-2 12c-1 5-4 8-8 8s-7-3-8-8z" fill="#082B63"/><circle cx="27.5" cy="31" r="1.8" fill="#F5C400"/><circle cx="36.5" cy="31" r="1.8" fill="#F5C400"/><path d="M30 46l2 6 2-6" fill="#082B63"/></svg>',
+      VRC:  '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#0B4AA8"/><path d="M32 10l17 6v13c0 11-7 19-17 24-10-5-17-13-17-24V16z" fill="#082B63" stroke="#F5C400" stroke-width="2.5"/><path d="M23 24l9 18 9-18" fill="none" stroke="#F5C400" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      ESCT: '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" fill="#FFFFFF" stroke="#0B4AA8" stroke-width="3"/><path d="M14 46L32 16l18 30z" fill="#16A34A"/><path d="M32 16v30M26 46l6-10 6 10" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linejoin="round"/><circle cx="46" cy="18" r="4" fill="#F5C400"/></svg>',
+    };
+
+    /**
+     * Ativos nativos — tokens SPL reais na Solana mainnet.
+     * `mint` é o contrato on-chain: fonte dos preços e da movimentação reais.
+     * Os preços abaixo são apenas fallback até a primeira cotação ao vivo chegar.
+     */
+    const NATIVE_ASSETS = [
+      { id: 'BDC',  name: 'Bode Coin',       symbol: 'BDC',  price: 0.17, priceUsd: 0.0298, change: 0,
+        mint: 'AeAQdgjGqtHErysb5FBvUxNxmob2mVBGnEXdmULJ7dH9', icon: 'assets/tokens/bdc.png',
+        pool: 'Gsf3ryndWyt6txGg1donwJVR1cDnirbDwAf8F8sdbA5u',
+        tagline: 'O token da resistência e da força do sertão. Usado em feiras, eventos e no comércio da comunidade.' },
+      { id: 'VRC',  name: 'Verum Coin',      symbol: 'VRC',  price: 0.04, priceUsd: 0.00705, change: 0,
+        mint: '42NcQ9VEaWe8WaKFdbDxqLXsJTqPj2gMArAk7c5ZkgxY', icon: 'assets/tokens/vrc.png',
+        pool: 'BoQGrQpE1axxAYFX3HsABLU6TZHeBgqKDvHfQEJR6oWa',
+        tagline: 'Token de utilidade do ecossistema Verum: acesso a serviços, descontos e governança comunitária.' },
+      { id: 'ESCT', name: 'Escoteiros Coin', symbol: 'ESCT', price: 0.0024, priceUsd: 0.00042, change: 0,
+        mint: 'Ctauy54NbyabVqGXHuY5wwVEAh29mGhh5KGfif5jppZt', icon: 'assets/tokens/esct.png',
+        pool: '6nsYVvfPeTr91FqGEuKc8XpUPDQ3eZcswfdH3dpJ4uVA',
+        tagline: 'Recompensa atividades educativas, ações sociais e projetos de grupos de jovens e voluntários.' },
+    ];
+
+    /** Câmbio USD→BRL de reserva (usado só até a cotação real chegar). */
+    const FX_FALLBACK = 5.4;
+
+    /** RPC pública da Solana usada para a movimentação on-chain. */
+    const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+
+    /** API do backend (ordens P2P, verificação). Vem do .env via assets/env.js. */
+    const API_URL = ((window.CMMD_ENV && window.CMMD_ENV.API_URL) || 'http://localhost:3333').replace(/\/+$/, '');
+
+    /** Outras cripto do P2P — cotações de referência simuladas. */
+    const OTHER_ASSETS = {
+      USDT:  { name: 'Tether',   symbol: 'USDT', price: 5.40 },
+      USDC:  { name: 'USD Coin', symbol: 'USDC', price: 5.40 },
+      SOL:   { name: 'Solana',   symbol: 'SOL',  price: 980.00 },
+      BTC:   { name: 'Bitcoin',  symbol: 'BTC',  price: 560000.00 },
+      OUTRA: { name: 'Outra',    symbol: '—',    price: null },
+    };
+
+    const P2P_FEE = 0.015;
+    const MIN_BRL = 20;
+    const MAX_BRL = 50000;
+    const PAY_EXPIRY_SECONDS = 15 * 60;
+
+    /* -------------------------------------------------------
+       2. UTILITÁRIOS
+       ------------------------------------------------------- */
+    const $  = (sel, root = document) => root.querySelector(sel);
+    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+    const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const usd = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' });
+
+    /** Formata preço em BRL com casas decimais adequadas à magnitude. */
+    function formatPrice(v) {
+      if (v == null) return '—';
+      if (v < 10) return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+      return brl.format(v);
+    }
+
+    /** Formata preço em dólar (US$) com casas decimais adequadas à magnitude. */
+    function formatUsd(v) {
+      if (v == null) return '—';
+      if (v < 10) return 'US$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+      return usd.format(v);
+    }
+
+    function formatQty(q, symbol) {
+      const digits = q >= 1000 ? 2 : q >= 1 ? 4 : 8;
+      return q.toLocaleString('pt-BR', { maximumFractionDigits: digits }) + ' ' + symbol;
+    }
+
+    function formatChange(c) {
+      return (c >= 0 ? '+' : '') + c.toFixed(2).replace('.', ',') + '%';
+    }
+
+    /** Converte "1.234,56" em 1234.56. */
+    function parseBRL(str) {
+      const digits = String(str).replace(/\D/g, '');
+      return digits ? parseInt(digits, 10) / 100 : 0;
+    }
+
+    /** Máscara monetária: os dígitos digitados entram como centavos. */
+    function maskBRL(str) {
+      const value = parseBRL(str);
+      return value ? value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+    }
+
+    function escapeHTML(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    /* O payload Pix (BR Code) agora é gerado pelo BACKEND junto com a ordem
+       (POST /api/p2p/orders) — chave e valores ficam em backend/.env. */
+
+    function randomId(prefix, len = 8) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let out = '';
+      for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+      return prefix + '-' + out;
+    }
+
+    /** Hash simples (FNV-1a) para gerar padrões determinísticos. */
+    function hash(str) {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+      return h >>> 0;
+    }
+
+    /** Endereço válido: Solana (base58, 32–44) ou EVM (0x + 40 hex). */
+    function isValidWallet(addr) {
+      const a = addr.trim();
+      return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a) || /^0x[a-fA-F0-9]{40}$/.test(a);
+    }
+
+    function shortAddr(a) { return a.length > 16 ? a.slice(0, 8) + '…' + a.slice(-6) : a; }
+
+    /** Exibe/limpa mensagens de erro de campo. */
+    function setError(fieldId, message) {
+      const el = $(`.field-error[data-for="${fieldId}"]`);
+      const input = document.getElementById(fieldId);
+      if (el) { el.textContent = message || ''; el.classList.toggle('hidden', !message); }
+      if (input && input.type !== 'checkbox') {
+        input.classList.toggle('border-down', !!message);
+        input.classList.toggle('border-gray-300', !message);
+        input.setAttribute('aria-invalid', message ? 'true' : 'false');
+      }
+    }
+
+    /** Notificação temporária (verde = sucesso, vermelho = alerta). */
+    function toast(message, type = 'success') {
+      const colors = type === 'error' ? 'border-down bg-down-soft text-down-dark'
+                   : type === 'info'  ? 'border-casa-blue bg-casa-sky text-casa-navy'
+                   : 'border-up bg-up-soft text-up-dark';
+      const el = document.createElement('div');
+      el.className = `toast pointer-events-auto rounded-xl border-l-4 px-4 py-3 text-sm font-semibold shadow-lg ${colors}`;
+      el.textContent = message;
+      $('#toasts').appendChild(el);
+      setTimeout(() => el.remove(), 3800);
+    }
+
+    function safeStorageSet(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) { /* armazenamento indisponível */ }
+    }
+    function safeStorageGet(key, fallback) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (_) { return fallback; }
+    }
+
+    /* -------------------------------------------------------
+       3. MOTOR DE PREÇOS (SIMULAÇÃO DE MERCADO)
+       ------------------------------------------------------- */
+    const Market = {
+      history: {},
+
+      init() {
+        // Gera um histórico inicial (em USD) coerente com a variação de 24h
+        NATIVE_ASSETS.forEach(a => {
+          const start = a.priceUsd / (1 + a.change / 100);
+          const pts = [];
+          for (let i = 0; i < 24; i++) {
+            const t = i / 23;
+            const noise = (Math.sin(hash(a.id) % 97 + i * 1.7) * 0.012);
+            pts.push(start + (a.priceUsd - start) * t + start * noise);
+          }
+          pts[23] = a.priceUsd;
+          a.openUsd = start;
+          this.history[a.id] = pts;
+        });
+      },
+
+      /** Passo aleatório leve (fallback offline), recalculando a variação vs abertura. */
+      tick() {
+        const fx = LiveMarket.usdBrl || FX_FALLBACK;
+        NATIVE_ASSETS.forEach(a => {
+          const prev = a.priceUsd;
+          const drift = (Math.random() - 0.5) * 0.008;
+          a.priceUsd = Math.max(0.000001, prev * (1 + drift));
+          a.price = a.priceUsd * fx;
+          a.change = ((a.priceUsd - a.openUsd) / a.openUsd) * 100;
+          a.lastMove = a.priceUsd >= prev ? 'up' : 'down';
+          const h = this.history[a.id];
+          h.push(a.priceUsd); if (h.length > 24) h.shift();
+        });
+      },
+
+      priceOf(id) {
+        const native = NATIVE_ASSETS.find(a => a.id === id);
+        if (native) return native.price;
+        return OTHER_ASSETS[id] ? OTHER_ASSETS[id].price : null;
+      },
+
+      symbolOf(id) {
+        const native = NATIVE_ASSETS.find(a => a.id === id);
+        return native ? native.symbol : (OTHER_ASSETS[id] ? OTHER_ASSETS[id].symbol : id);
+      },
+
+      nameOf(id) {
+        const native = NATIVE_ASSETS.find(a => a.id === id);
+        return native ? native.name : (OTHER_ASSETS[id] ? OTHER_ASSETS[id].name : id);
+      },
+    };
+
+    /* -------------------------------------------------------
+       3b. COTAÇÕES E MOVIMENTAÇÃO REAIS (Solana / APIs públicas)
+       Fontes: Jupiter Price API → DexScreener (fallback) para o preço em USD,
+       AwesomeAPI → open.er-api.com para o câmbio USD→BRL, e a RPC pública da
+       Solana para as transações on-chain. Se tudo estiver fora do ar, o site
+       mantém a simulação local como fallback.
+       ------------------------------------------------------- */
+    const LiveMarket = {
+      live: false,
+      usdBrl: null,
+      _fxAt: 0,
+
+      async fetchJson(url, options) {
+        const res = await fetch(url, options);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      },
+
+      async refreshFx() {
+        if (this.usdBrl && Date.now() - this._fxAt < 10 * 60 * 1000) return;
+        try {
+          const d = await this.fetchJson('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+          const bid = Number(d.USDBRL && d.USDBRL.bid);
+          if (bid > 0) { this.usdBrl = bid; this._fxAt = Date.now(); return; }
+        } catch (_) { /* tenta o fallback */ }
+        try {
+          const d = await this.fetchJson('https://open.er-api.com/v6/latest/USD');
+          const r = d.rates && d.rates.BRL;
+          if (r > 0) { this.usdBrl = r; this._fxAt = Date.now(); }
+        } catch (_) { /* sem câmbio agora; mantém o último conhecido */ }
+      },
+
+      /** Busca os preços reais em USD e aplica em NATIVE_ASSETS (em BRL). */
+      async refreshPrices() {
+        const mints = NATIVE_ASSETS.map(a => a.mint);
+        const quotes = {};
+        try {
+          const data = await this.fetchJson('https://lite-api.jup.ag/price/v3?ids=' + mints.join(','));
+          mints.forEach(m => {
+            const q = data[m];
+            if (q && q.usdPrice > 0) quotes[m] = { usd: q.usdPrice, change: q.priceChange24h, liq: Infinity };
+          });
+        } catch (_) { /* cai para a DexScreener abaixo */ }
+
+        const missing = mints.filter(m => !quotes[m]);
+        if (missing.length) {
+          try {
+            const pairs = await this.fetchJson('https://api.dexscreener.com/tokens/v1/solana/' + missing.join(','));
+            (Array.isArray(pairs) ? pairs : []).forEach(p => {
+              const m = p.baseToken && p.baseToken.address;
+              const usd = Number(p.priceUsd);
+              if (!m || missing.indexOf(m) === -1 || !(usd > 0)) return;
+              const liq = (p.liquidity && p.liquidity.usd) || 0;
+              if (!quotes[m] || liq > quotes[m].liq) quotes[m] = { usd, change: p.priceChange && p.priceChange.h24, liq };
+            });
+          } catch (_) { /* segue sem os que faltaram */ }
+        }
+
+        await this.refreshFx();
+        if (!this.usdBrl) return false;
+
+        let updated = false;
+        NATIVE_ASSETS.forEach(a => {
+          const q = quotes[a.mint];
+          if (!q) return;
+          const prev = a.priceUsd;
+          a.priceUsd = q.usd;
+          a.price = q.usd * this.usdBrl; // equivalente em BRL (usado no P2P/Pix)
+          a.change = typeof q.change === 'number' ? q.change : 0;
+          a.openUsd = a.change > -99.99 ? a.priceUsd / (1 + a.change / 100) : a.priceUsd;
+          a.lastMove = a.priceUsd >= prev ? 'up' : 'down';
+          const h = Market.history[a.id];
+          if (h) {
+            // Com histórico real (velas de 1 h), o preço ao vivo só atualiza o ponto atual.
+            if (a.historyReal) h[h.length - 1] = a.priceUsd;
+            else { h.push(a.priceUsd); if (h.length > 24) h.shift(); }
+          }
+          updated = true;
+        });
+        if (updated) this.live = true;
+        return updated;
+      },
+
+      /**
+       * Gráfico REAL: histórico de preço das últimas 24 h (velas de 1 h) do pool
+       * de cada token, via API pública do GeckoTerminal. Substitui a curva simulada.
+       */
+      async loadHistory() {
+        for (const a of NATIVE_ASSETS) {
+          if (!a.pool) continue;
+          try {
+            const o = await this.fetchJson(
+              `https://api.geckoterminal.com/api/v2/networks/solana/pools/${a.pool}/ohlcv/hour?aggregate=1&limit=24&currency=usd`,
+            );
+            const list = o.data && o.data.attributes && o.data.attributes.ohlcv_list;
+            if (!Array.isArray(list) || list.length < 2) continue;
+            const closes = list
+              .slice()
+              .sort((x, y) => x[0] - y[0]) // a API devolve do mais novo para o mais antigo
+              .map(c => Number(c[4]))
+              .filter(v => v > 0);
+            if (closes.length >= 2) {
+              Market.history[a.id] = closes.slice(-24);
+              a.historyReal = true;
+            }
+          } catch (_) { /* mantém a curva atual; tenta de novo no próximo ciclo */ }
+        }
+        Carousel.refresh();
+        refreshLiveLabels();
+      },
+
+      /** Últimas transações do token direto da RPC pública da Solana. */
+      async loadMovements(asset) {
+        const el = $(`[data-moves="${asset.id}"]`);
+        if (!el) return;
+        try {
+          const data = await this.fetchJson(SOLANA_RPC, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getSignaturesForAddress', params: [asset.mint, { limit: 4 }] }),
+          });
+          const sigs = data.result || [];
+          if (!sigs.length) { el.innerHTML = `<li>${t('Sem transações recentes.')}</li>`; return; }
+          el.innerHTML = sigs.map(s => {
+            const ok = !s.err;
+            return `<li class="flex items-center justify-between gap-2">
+              <a class="font-mono text-casa-blue hover:underline" target="_blank" rel="noopener" href="https://solscan.io/tx/${s.signature}">${s.signature.slice(0, 4)}…${s.signature.slice(-4)}</a>
+              <span>${s.blockTime ? timeAgo(s.blockTime * 1000) : '—'}</span>
+              <span class="font-semibold ${ok ? 'text-up-dark' : 'text-down-dark'}">${ok ? t('confirmada') : t('falhou')}</span>
+            </li>`;
+          }).join('');
+        } catch (_) {
+          el.innerHTML = `<li>${t('RPC indisponível agora —')} <a class="text-casa-blue hover:underline" target="_blank" rel="noopener" href="https://solscan.io/token/${asset.mint}">${t('ver no Solscan')}</a>.</li>`;
+        }
+      },
+
+      start() {
+        const paint = () => { Carousel.refresh(); Ticker.render(); P2P.updateSummary(); refreshLiveLabels(); };
+        const update = () => this.refreshPrices().then(ok => { if (ok) paint(); }).catch(() => {});
+        update();
+        this.loadHistory();
+        NATIVE_ASSETS.forEach(a => this.loadMovements(a));
+        // Tempo real: cotação a cada 10 s, movimentação a cada 60 s, gráfico 24 h a cada 5 min
+        setInterval(update, 10 * 1000);
+        setInterval(() => NATIVE_ASSETS.forEach(a => this.loadMovements(a)), 60 * 1000);
+        setInterval(() => this.loadHistory(), 5 * 60 * 1000);
+      },
+    };
+
+    function timeAgo(ts) {
+      const s = Math.max(1, Math.round((Date.now() - ts) / 1000));
+      let n, unit;
+      if (s < 60) { n = s; unit = 's'; }
+      else { const m = Math.round(s / 60); if (m < 60) { n = m; unit = 'min'; }
+        else { const h = Math.round(m / 60); if (h < 24) { n = h; unit = 'h'; } else { n = Math.round(h / 24); unit = 'd'; } } }
+      const lang = curLang();
+      if (lang === 'en') return n + ' ' + unit + ' ago';
+      const prefix = lang === 'es' ? 'hace ' : 'há ';
+      return prefix + n + ' ' + unit;
+    }
+
+    function refreshLiveLabels() {
+      $$('[data-live-label]').forEach(el => { el.textContent = LiveMarket.live ? t('ao vivo · Solana') : t('simulado'); });
+    }
+
+    /** Logo oficial do token (cópia local otimizada, origem: metadados on-chain/IPFS)
+        com fallback para o SVG inline. */
+    function iconHTML(a) {
+      return a.icon
+        ? `<img src="${a.icon}" alt="${escapeHTML(a.name)}" class="h-full w-full rounded-full object-cover" loading="lazy">`
+        : ICONS[a.id];
+    }
+
+    /** Gera o caminho SVG da mini-linha de preço. */
+    function sparkPath(values, w, h) {
+      const min = Math.min(...values), max = Math.max(...values);
+      const range = max - min || 1;
+      return values.map((v, i) => {
+        const x = (i / (values.length - 1)) * w;
+        const y = h - ((v - min) / range) * (h - 6) - 3;
+        return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+      }).join(' ');
+    }
+
+    function changeBadge(change) {
+      const up = change >= 0;
+      return `<span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${up ? 'bg-up-soft text-up-dark' : 'bg-down-soft text-down-dark'}" data-badge>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="${up ? 'M5 1l4 6H1z' : 'M5 9L1 3h8z'}" fill="currentColor"/></svg>
+        ${formatChange(change)}
+      </span>`;
+    }
+
+    /* -------------------------------------------------------
+       4. CARROSSEL DE ATIVOS
+       ------------------------------------------------------- */
+    const Carousel = {
+      index: 0,
+      timer: null,
+      AUTOPLAY_MS: 6000,
+
+      init() {
+        const track = $('#carouselTrack');
+        track.innerHTML = NATIVE_ASSETS.map((a, i) => this.slideHTML(a, i)).join('');
+        $('#carouselDots').innerHTML = NATIVE_ASSETS.map((a, i) =>
+          `<button type="button" role="tab" class="carousel-dot h-2.5 rounded-full transition-all" data-index="${i}" aria-label="Ir para ${a.name}"></button>`
+        ).join('');
+
+        $('#carouselPrev').addEventListener('click', () => { this.prev(); this.restart(); });
+        $('#carouselNext').addEventListener('click', () => { this.next(); this.restart(); });
+        $$('.carousel-dot').forEach(d => d.addEventListener('click', () => { this.go(+d.dataset.index); this.restart(); }));
+
+        // Teclado
+        $('#carousel').addEventListener('keydown', e => {
+          if (e.key === 'ArrowLeft')  { e.preventDefault(); this.prev(); this.restart(); }
+          if (e.key === 'ArrowRight') { e.preventDefault(); this.next(); this.restart(); }
+        });
+
+        // Pausa no hover/foco
+        const root = $('#carousel');
+        root.addEventListener('mouseenter', () => this.stop());
+        root.addEventListener('mouseleave', () => this.start());
+        root.addEventListener('focusin', () => this.stop());
+        root.addEventListener('focusout', () => this.start());
+
+        // Gesto de arrastar (touch)
+        let startX = null;
+        root.addEventListener('touchstart', e => { startX = e.touches[0].clientX; this.stop(); }, { passive: true });
+        root.addEventListener('touchend', e => {
+          if (startX === null) return;
+          const dx = e.changedTouches[0].clientX - startX;
+          if (Math.abs(dx) > 40) dx < 0 ? this.next() : this.prev();
+          startX = null; this.start();
+        });
+
+        // Botões "Comprar [Ativo]"
+        track.addEventListener('click', e => {
+          const btn = e.target.closest('[data-buy]');
+          if (btn) P2P.openWithAsset(btn.dataset.buy);
+        });
+
+        this.go(0);
+        this.start();
+      },
+
+      slideHTML(a, i) {
+        return `
+        <article class="w-full min-w-full p-1" role="group" aria-roledescription="slide" aria-label="${i + 1} de ${NATIVE_ASSETS.length}: ${a.name}" data-slide="${a.id}">
+          <div class="grid gap-6 rounded-3xl border border-casa-blue/10 bg-white p-6 shadow-card sm:p-8 md:grid-cols-[1.1fr_1fr] md:gap-10">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-4">
+                <div class="h-16 w-16 shrink-0 drop-shadow sm:h-20 sm:w-20" data-icon="${a.id}">${iconHTML(a)}</div>
+                <div>
+                  <h3 class="font-display text-2xl font-extrabold text-casa-navy sm:text-3xl">${a.name}</h3>
+                  <p class="font-mono text-sm font-semibold text-ink-soft">${t(a.symbol + ' · Utility Token')}</p>
+                </div>
+              </div>
+              <p class="mt-4 text-ink">${t(a.tagline)}</p>
+              <div class="mt-6 flex flex-wrap items-end gap-3">
+                <div>
+                  <p class="text-xs font-semibold uppercase tracking-wider text-ink-soft">${t('Preço atual de referência (USD)')}</p>
+                  <p class="font-display text-3xl font-extrabold text-ink-strong sm:text-4xl" data-i18n-skip data-price="${a.id}">${formatUsd(a.priceUsd)}</p>
+                </div>
+                <div class="pb-1.5" data-i18n-skip data-change="${a.id}">${changeBadge(a.change)}</div>
+              </div>
+              <button type="button" data-buy="${a.id}"
+                class="mt-6 w-full rounded-xl bg-up px-6 py-4 font-display text-lg font-bold text-white shadow-lg transition hover:bg-up-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-up/40 sm:w-auto">
+                ${t('Comprar ' + a.name)}
+              </button>
+            </div>
+            <div class="flex flex-col justify-between rounded-2xl bg-casa-sky p-5">
+              <div class="flex items-center justify-between text-sm">
+                <span class="font-semibold text-casa-navy">${t('Histórico de preço (24 h)')}</span>
+                <span class="text-ink-soft" data-i18n-skip data-live-label>${t('simulado')}</span>
+              </div>
+              <svg viewBox="0 0 300 120" class="mt-3 h-32 w-full" preserveAspectRatio="none" aria-hidden="true">
+                <path data-spark="${a.id}" d="${sparkPath(Market.history[a.id], 300, 120)}" fill="none" stroke="${a.change >= 0 ? '#16A34A' : '#DC2626'}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+              </svg>
+              <dl class="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div class="rounded-xl bg-white p-3"><dt class="text-ink-soft">${t('Abertura')}</dt><dd class="font-semibold text-ink-strong" data-i18n-skip>${formatUsd(a.openUsd)}</dd></div>
+                <div class="rounded-xl bg-white p-3"><dt class="text-ink-soft">${t('Rede')}</dt><dd class="font-semibold text-ink-strong">Solana</dd></div>
+              </dl>
+              <div class="mt-3 rounded-xl bg-white p-3">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="font-semibold text-casa-navy">${t('Movimentação on-chain')}</span>
+                  <a href="https://solscan.io/token/${a.mint}" target="_blank" rel="noopener" class="text-xs font-semibold text-casa-blue hover:underline">${t('ver no Solscan ↗')}</a>
+                </div>
+                <ul data-moves="${a.id}" data-i18n-skip class="mt-2 space-y-1.5 text-xs text-ink-soft"><li>${t('Carregando transações…')}</li></ul>
+              </div>
+            </div>
+          </div>
+        </article>`;
+      },
+
+      go(i) {
+        const n = NATIVE_ASSETS.length;
+        this.index = (i + n) % n;
+        $('#carouselTrack').style.transform = `translateX(-${this.index * 100}%)`;
+        $$('.carousel-dot').forEach((d, k) => {
+          const active = k === this.index;
+          d.setAttribute('aria-selected', active ? 'true' : 'false');
+          d.className = 'carousel-dot h-2.5 rounded-full transition-all ' + (active ? 'w-8 bg-casa-blue' : 'w-2.5 bg-casa-blue/25 hover:bg-casa-blue/50');
+        });
+        $$('[data-slide]').forEach((s, k) => {
+          const hidden = k !== this.index;
+          s.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+          $$('button', s).forEach(b => b.tabIndex = hidden ? -1 : 0);
+        });
+      },
+      next() { this.go(this.index + 1); },
+      prev() { this.go(this.index - 1); },
+      start() { this.stop(); this.timer = setInterval(() => this.next(), this.AUTOPLAY_MS); },
+      stop() { if (this.timer) clearInterval(this.timer); this.timer = null; },
+      restart() { this.start(); },
+
+      /** Atualiza preços, badges e gráficos sem recriar o DOM. */
+      refresh() {
+        NATIVE_ASSETS.forEach(a => {
+          const priceEl = $(`[data-price="${a.id}"]`);
+          if (priceEl) {
+            const text = formatUsd(a.priceUsd);
+            if (priceEl.textContent !== text) {
+              priceEl.textContent = text;
+              priceEl.classList.remove('flash-up', 'flash-down');
+              void priceEl.offsetWidth; // reinicia a animação
+              priceEl.classList.add(a.lastMove === 'up' ? 'flash-up' : 'flash-down');
+            }
+          }
+          const chEl = $(`[data-change="${a.id}"]`);
+          if (chEl) chEl.innerHTML = changeBadge(a.change);
+          const sp = $(`[data-spark="${a.id}"]`);
+          if (sp) {
+            sp.setAttribute('d', sparkPath(Market.history[a.id], 300, 120));
+            sp.setAttribute('stroke', a.change >= 0 ? '#16A34A' : '#DC2626');
+          }
+        });
+      },
+    };
+
+    /* -------------------------------------------------------
+       5. PAINEL DE REFERÊNCIA (HERO)
+       ------------------------------------------------------- */
+    const Ticker = {
+      render() {
+        $('#tickerList').innerHTML = NATIVE_ASSETS.map(a => `
+          <li class="flex items-center justify-between gap-3 py-3">
+            <span class="flex items-center gap-3">
+              <span class="h-10 w-10" data-icon="${a.id}">${iconHTML(a)}</span>
+              <span><span class="block font-semibold text-white">${a.name}</span><span class="block font-mono text-xs text-white/60">${a.symbol}</span></span>
+            </span>
+            <span class="text-right">
+              <span class="block font-display font-bold text-white">${formatUsd(a.priceUsd)}</span>
+              <span class="mt-0.5 block">${changeBadge(a.change)}</span>
+            </span>
+          </li>`).join('');
+        $('#lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+      },
+    };
+
+    /* -------------------------------------------------------
+       6. MODAIS (abertura, fechamento, foco e ESC)
+       ------------------------------------------------------- */
+    const Modal = {
+      active: null,
+      lastFocus: null,
+
+      open(id) {
+        const m = document.getElementById(id);
+        this.lastFocus = document.activeElement;
+        m.classList.add('is-open');
+        m.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        this.active = m;
+        setTimeout(() => {
+          // No celular, o modal de parceria abre no topo (card de vantagens visível), sem foco automático.
+          if (m.dataset.autofocus === 'desktop' && window.innerWidth < 1024) {
+            const card = m.querySelector('.modal-card');
+            if (card) { card.setAttribute('tabindex', '-1'); card.focus({ preventScroll: true }); }
+            return;
+          }
+          const f = m.querySelector('input:not([type=hidden]):not([readonly]), button:not([data-close-modal]), select, textarea');
+          if (f) f.focus();
+        }, 50);
+      },
+
+      close(id) {
+        const m = id ? document.getElementById(id) : this.active;
+        if (!m) return;
+        m.classList.remove('is-open');
+        m.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        this.active = null;
+        m.dispatchEvent(new CustomEvent('modal:closed'));
+        if (this.lastFocus && this.lastFocus.focus) this.lastFocus.focus();
+      },
+
+      init() {
+        $$('.modal').forEach(m => {
+          m.addEventListener('click', e => { if (e.target === m) this.close(m.id); });
+          $$('[data-close-modal]', m).forEach(b => b.addEventListener('click', () => this.close(m.id)));
+        });
+        document.addEventListener('keydown', e => {
+          if (!this.active) return;
+          if (e.key === 'Escape') this.close();
+          // Mantém o foco dentro do modal (Tab / Shift+Tab)
+          if (e.key === 'Tab') {
+            const items = $$('a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])', this.active)
+              .filter(el => el.offsetParent !== null);
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }
+        });
+      },
+    };
+
+    /* -------------------------------------------------------
+       7. MÓDULO P2P
+       ------------------------------------------------------- */
+    const P2P = {
+      init() {
+        $('#p2pToggle').addEventListener('click', () => this.toggle());
+
+        $('#p2pAsset').addEventListener('change', () => {
+          $('#p2pOtherWrap').classList.toggle('hidden', $('#p2pAsset').value !== 'OUTRA');
+          setError('p2pOther', '');
+          this.updateSummary();
+        });
+
+        $('#p2pAmount').addEventListener('input', e => {
+          e.target.value = maskBRL(e.target.value);
+          setError('p2pAmount', '');
+          this.updateSummary();
+        });
+
+        $$('.quick-amount').forEach(b => b.addEventListener('click', () => {
+          $('#p2pAmount').value = maskBRL(String(+b.dataset.value * 100));
+          setError('p2pAmount', '');
+          this.updateSummary();
+        }));
+
+        $('#p2pWallet').addEventListener('input', () => setError('p2pWallet', ''));
+        // Validação real no backend ao sair do campo (curva Ed25519 / checksum EVM).
+        $('#p2pWallet').addEventListener('blur', () => this.checkWalletRemote());
+        $('#p2pTerms').addEventListener('change', () => setError('p2pTerms', ''));
+
+        $('#p2pPaste').addEventListener('click', async () => {
+          try {
+            const text = await navigator.clipboard.readText();
+            $('#p2pWallet').value = text.trim();
+            setError('p2pWallet', '');
+          } catch (_) {
+            toast(t('Não foi possível acessar a área de transferência. Cole manualmente (Ctrl+V).'), 'info');
+            $('#p2pWallet').focus();
+          }
+        });
+
+        $('#p2pForm').addEventListener('submit', e => { e.preventDefault(); this.submit(); });
+        this.updateSummary();
+      },
+
+      isOpen() { return $('#p2pToggle').getAttribute('aria-expanded') === 'true'; },
+
+      toggle(force) {
+        const open = typeof force === 'boolean' ? force : !this.isOpen();
+        $('#p2pToggle').setAttribute('aria-expanded', String(open));
+        $('#p2pPanel').classList.toggle('is-open', open);
+      },
+
+      /** Chamado pelos botões "Comprar [Ativo]" do carrossel. */
+      openWithAsset(assetId) {
+        $('#p2pAsset').value = assetId;
+        $('#p2pAsset').dispatchEvent(new Event('change'));
+        this.toggle(true);
+        $('#p2p').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(() => $('#p2pAmount').focus({ preventScroll: true }), 500);
+        toast(t('{asset} selecionado. Informe o valor e sua Verum Wallet.', { asset: Market.nameOf(assetId) }), 'info');
+      },
+
+      /** Calcula taxa e quantidade estimada. */
+      quote() {
+        const asset = $('#p2pAsset').value;
+        const amount = parseBRL($('#p2pAmount').value);
+        const price = Market.priceOf(asset);
+        const fee = amount * P2P_FEE;
+        // quantidade = (valor − taxa) / preço (mesma regra do backend; sem desconto de gás)
+        const qty = price ? Math.max(0, amount - fee) / price : null;
+        return { asset, amount, price, fee, qty, symbol: Market.symbolOf(asset) };
+      },
+
+      updateSummary() {
+        const q = this.quote();
+        const native = NATIVE_ASSETS.find(a => a.id === q.asset);
+        $('#sumPrice').textContent = native && q.price
+          ? `${formatUsd(native.priceUsd)} (≈ ${formatPrice(q.price)})`
+          : q.price ? formatPrice(q.price) : t('Definida pela Mesa OTC');
+        $('#sumFee').textContent = q.amount ? brl.format(q.fee) : '—';
+        $('#sumQty').textContent = q.amount && q.qty != null ? formatQty(q.qty, q.symbol) : (q.amount ? t('A confirmar') : '—');
+      },
+
+      /**
+       * Confirma o endereço no backend (curva Ed25519 de verdade, não só o formato).
+       * Devolve true/false; em caso de servidor indisponível devolve null (não bloqueia,
+       * a criação da ordem valida de novo no servidor).
+       */
+      async checkWalletRemote() {
+        const wallet = $('#p2pWallet').value.trim();
+        if (!wallet || !isValidWallet(wallet)) return null; // o formato é tratado pelo validate()
+        try {
+          const res = await fetch(API_URL + '/api/wallet/validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address: wallet }),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setError('p2pWallet', (json.error && json.error.message) || t('Endereço inválido.'));
+            return false;
+          }
+          setError('p2pWallet', '');
+          return true;
+        } catch (_) {
+          return null; // backend fora do ar: não bloqueia aqui
+        }
+      },
+
+      validate() {
+        let ok = true;
+        const asset = $('#p2pAsset').value;
+        const other = $('#p2pOther').value.trim();
+        const amount = parseBRL($('#p2pAmount').value);
+        const wallet = $('#p2pWallet').value.trim();
+
+        if (asset === 'OUTRA' && other.length < 2) { setError('p2pOther', t('Informe qual cripto você deseja comprar.')); ok = false; }
+        if (!amount) { setError('p2pAmount', t('Informe o valor do investimento.')); ok = false; }
+        else if (amount < MIN_BRL) { setError('p2pAmount', t('O valor mínimo é {v}.', { v: brl.format(MIN_BRL) })); ok = false; }
+        else if (amount > MAX_BRL) { setError('p2pAmount', t('O valor máximo por ordem é {v}.', { v: brl.format(MAX_BRL) })); ok = false; }
+
+        if (!wallet) { setError('p2pWallet', t('Cole o endereço público da sua Verum Wallet.')); ok = false; }
+        else if (wallet.split(/\s+/).length >= 12) { setError('p2pWallet', t('Isso parece uma frase-semente! Nunca compartilhe sua seed phrase. Cole apenas o endereço público.')); ok = false; }
+        else if (!isValidWallet(wallet)) { setError('p2pWallet', t('Endereço inválido. Use o endereço público da Verum Wallet (Solana base58 ou EVM 0x…).')); ok = false; }
+
+        if (!$('#p2pTerms').checked) { setError('p2pTerms', t('Confirme a auto-custódia e a leitura do aviso.')); ok = false; }
+        return ok;
+      },
+
+      async submit() {
+        if (!this.validate()) {
+          toast(t('Revise os campos destacados.'), 'error');
+          const firstErr = $$('.field-error:not(.hidden)')[0];
+          if (firstErr) { const f = document.getElementById(firstErr.dataset.for); if (f) f.focus(); }
+          return;
+        }
+        if ((await this.checkWalletRemote()) === false) {
+          toast(t('Endereço de carteira recusado. Confira o endereço público da sua Verum Wallet.'), 'error');
+          $('#p2pWallet').focus();
+          return;
+        }
+        const q = this.quote();
+        const submitBtn = $('#p2pForm button[type="submit"]');
+        if (submitBtn) { submitBtn.disabled = true; }
+        try {
+          // Cria a ordem REAL no backend: valida, trava a cotação e gera a cobrança Pix.
+          const res = await fetch(API_URL + '/api/p2p/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Idempotency-Key': randomId('web', 24).replace(/-/g, '_') },
+            body: JSON.stringify({
+              assetSymbol: q.asset,
+              fiatAmount: q.amount.toFixed(2),
+              userWalletAddress: $('#p2pWallet').value.trim(),
+            }),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const err = json.error || {};
+            // Erros de campo do backend → destaca o campo correspondente
+            const fieldMap = { fiatAmount: 'p2pAmount', userWalletAddress: 'p2pWallet', assetSymbol: 'p2pOther' };
+            (Array.isArray(err.details) ? err.details : []).forEach(d => {
+              const local = fieldMap[d.field || d.path];
+              if (local) setError(local, d.message || err.message);
+            });
+            toast(err.message || t('Não foi possível criar a ordem. Tente novamente.'), 'error');
+            return;
+          }
+          Payment.open(json.data);
+        } catch (_) {
+          toast(t('Servidor indisponível. Verifique sua conexão e tente novamente.'), 'error');
+        } finally {
+          if (submitBtn) { submitBtn.disabled = false; }
+        }
+      },
+
+      reset() {
+        $('#p2pForm').reset();
+        $('#p2pOtherWrap').classList.add('hidden');
+        this.updateSummary();
+      },
+    };
+
+    /* -------------------------------------------------------
+       8. PAGAMENTO (QR PIX + STATUS REAL DA ORDEM NO BACKEND)
+       ------------------------------------------------------- */
+    const Payment = {
+      order: null,
+      countdown: null,
+      poller: null,
+      STEPS: ['Aguardando', 'Confirmado', 'Enviando', 'Concluído'],
+
+      init() {
+        $('#payConfirm').addEventListener('click', () => this.checkNow());
+        $('#payCancel').addEventListener('click', () => this.cancel());
+        $('#payCopyBtn').addEventListener('click', () => this.copyCode());
+        $('#payModal').addEventListener('modal:closed', () => this.cleanup());
+      },
+
+      /** Abre o modal com a ordem criada no backend (DTO de /api/p2p/orders). */
+      open(dto) {
+        this.cleanup();
+        this.order = dto;
+        const asset = NATIVE_ASSETS.find(a => a.symbol === dto.assetSymbol);
+        $('#payOrderId').textContent = dto.payment.txid;
+        $('#payAsset').textContent = asset ? `${asset.name} (${asset.symbol})` : dto.assetSymbol;
+        $('#payAmount').textContent = brl.format(parseFloat(dto.fiatAmount));
+        $('#payQty').textContent = formatQty(parseFloat(dto.tokenAmount), dto.assetSymbol);
+        $('#payWallet').textContent = shortAddr(dto.userWalletAddress);
+        $('#payWallet').title = dto.userWalletAddress;
+        // Cobrança Pix gerada pelo backend (mesma que está registrada na ordem)
+        $('#payCopyCode').value = dto.payment.pixCopyPaste || '';
+        $('#payQrArea').classList.remove('hidden');
+        $('#payDoneArea').classList.add('hidden');
+        $('#payActions').classList.remove('hidden');
+        $('#payConfirm').disabled = false;
+        $('#payConfirm').textContent = t('Já fiz o pagamento');
+        $('#payCancel').textContent = t('Cancelar ordem');
+        this.drawQr(dto.payment.pixCopyPaste || '');
+        this.setStep(0);
+        this.startTimer();
+        this.startPolling();
+        Modal.open('payModal');
+      },
+
+      setStep(active) {
+        $('#payStatus').innerHTML = this.STEPS.map((label, i) => {
+          const done = i < active, cur = i === active;
+          const dot = done ? 'bg-up border-up text-white'
+                    : cur ? 'bg-casa-gold border-casa-gold text-casa-navy'
+                    : 'bg-white border-gray-300 text-ink-soft';
+          return `<li class="flex flex-col items-center gap-1 ${cur ? 'text-casa-navy' : done ? 'text-up-dark' : ''}">
+            <span class="step-dot grid h-8 w-8 place-items-center rounded-full border-2 text-xs font-bold ${dot}">${done ? '✓' : i + 1}</span>${t(label)}</li>`;
+        }).join('');
+        if (this.order) this.order.step = active;
+      },
+
+      startTimer() {
+        const expiresAt = this.order && this.order.payment ? Date.parse(this.order.payment.expiresAt) : NaN;
+        let left = Number.isFinite(expiresAt) ? Math.max(0, Math.floor((expiresAt - Date.now()) / 1000)) : PAY_EXPIRY_SECONDS;
+        const render = () => {
+          const m = String(Math.floor(left / 60)).padStart(2, '0');
+          const s = String(left % 60).padStart(2, '0');
+          $('#payTimer').textContent = `${m}:${s}`;
+        };
+        render();
+        this.countdown = setInterval(() => {
+          left--; render();
+          if (left <= 0) {
+            clearInterval(this.countdown);
+            toast(t('Ordem expirada. Gere uma nova ordem.'), 'error');
+            Modal.close('payModal');
+          }
+        }, 1000);
+      },
+
+      /** Desenha o QR Code Pix real (BR Code) no canvas. */
+      drawQr(payload) {
+        const canvas = $('#payQr');
+        const ctx = canvas.getContext && canvas.getContext('2d');
+        if (!ctx || typeof qrcode !== 'function') return;
+        const qr = qrcode(0, 'M'); // versão automática, correção de erro M
+        qr.addData(payload);
+        qr.make();
+        const N = qr.getModuleCount();
+        const size = canvas.width;
+        const margin = Math.floor(size * 0.04);
+        const cell = (size - margin * 2) / N;
+        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#000000';
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          if (qr.isDark(y, x)) ctx.fillRect(margin + x * cell, margin + y * cell, Math.ceil(cell), Math.ceil(cell));
+        }
+      },
+
+      async copyCode() {
+        const code = $('#payCopyCode').value;
+        try { await navigator.clipboard.writeText(code); toast(t('Código copiado.')); }
+        catch (_) { $('#payCopyCode').select(); toast(t('Selecione e copie o código manualmente.'), 'info'); }
+      },
+
+      /* ---------- acompanhamento real da ordem no backend ---------- */
+
+      /** Consulta periódica do status (o pagamento é confirmado via webhook no backend). */
+      startPolling() {
+        clearInterval(this.poller);
+        this.poller = setInterval(() => this.refresh(), 6000);
+      },
+
+      /** Botão "Já fiz o pagamento": consulta imediatamente e informa o usuário. */
+      async checkNow() {
+        if (!this.order) return;
+        $('#payConfirm').disabled = true;
+        $('#payConfirm').textContent = t('Verificando…');
+        const updated = await this.refresh();
+        if (updated && updated.status === 'PENDING') {
+          toast(t('Ainda aguardando a confirmação do Pix. Assim que o pagamento compensar, a tela atualiza sozinha.'), 'info');
+          $('#payConfirm').disabled = false;
+          $('#payConfirm').textContent = t('Já fiz o pagamento');
+        }
+      },
+
+      /** Busca o estado atual da ordem e sincroniza a interface. */
+      async refresh() {
+        if (!this.order) return null;
+        let dto;
+        try {
+          const res = await fetch(API_URL + '/api/p2p/orders/' + this.order.id + '?qrcode=false');
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) return null;
+          dto = json.data;
+        } catch (_) { return null; }
+        this.order = dto;
+
+        if (dto.status === 'PAID') {
+          clearInterval(this.countdown);
+          $('#payCancel').classList.add('hidden');
+          $('#payConfirm').disabled = true;
+          $('#payConfirm').textContent = t('Processando…');
+          this.setStep(2);
+        } else if (dto.status === 'COMPLETED') {
+          this.finish(dto);
+        } else if (dto.status === 'EXPIRED') {
+          clearInterval(this.poller);
+          clearInterval(this.countdown);
+          toast(t('Ordem expirada. Gere uma nova ordem.'), 'error');
+          Modal.close('payModal');
+        } else if (dto.status === 'CANCELLED') {
+          clearInterval(this.poller);
+          Modal.close('payModal');
+        }
+        return dto;
+      },
+
+      /** Ordem COMPLETED: tokens enviados — mostra o hash real registrado no backend. */
+      finish(dto) {
+        clearInterval(this.poller);
+        clearInterval(this.countdown);
+        this.setStep(4);
+        $('#payTxHash').textContent = dto.custody ? dto.custody.txHash : '—';
+        $('#payQrArea').classList.add('hidden');
+        $('#payDoneArea').classList.remove('hidden');
+        $('#payCancel').classList.add('hidden');
+        $('#payConfirm').disabled = false;
+        $('#payConfirm').textContent = t('Concluir');
+        $('#payConfirm').onclick = () => { Modal.close('payModal'); P2P.reset(); };
+        const history = safeStorageGet('cmmd_orders', []);
+        history.unshift({ id: dto.id, txid: dto.payment.txid, asset: dto.assetSymbol, amount: parseFloat(dto.fiatAmount), qty: dto.tokenAmount, tx: dto.custody && dto.custody.txHash, status: dto.status, createdAt: dto.createdAt });
+        safeStorageSet('cmmd_orders', history.slice(0, 20));
+        toast(t('Concluído! Ativos enviados para sua Verum Wallet.'));
+      },
+
+      /** Cancela a ordem no backend (só vale enquanto PENDING). */
+      async cancel() {
+        if (!this.order) return;
+        $('#payCancel').disabled = true;
+        try {
+          await fetch(API_URL + '/api/p2p/orders/' + this.order.id + '/cancel', { method: 'POST' });
+        } catch (_) { /* mesmo offline, fecha o modal; a ordem expira sozinha no backend */ }
+        $('#payCancel').disabled = false;
+        toast(t('Ordem cancelada.'), 'error');
+        Modal.close('payModal');
+      },
+
+      cleanup() {
+        clearInterval(this.countdown);
+        clearInterval(this.poller);
+        this.poller = null;
+        $('#payConfirm').onclick = null;
+        $('#payCancel').classList.remove('hidden');
+        $('#payCancel').disabled = false;
+      },
+    };
+
+    /* -------------------------------------------------------
+       9. SOLICITAÇÃO DE PARCERIA / ONBOARDING B2B
+          Formulário em 3 etapas → INSERT em public.business_applications (Supabase)
+       ------------------------------------------------------- */
+
+    /** Cliente mínimo do Supabase (PostgREST via fetch, sem biblioteca externa). */
+    const SupabaseREST = {
+      config() {
+        const meta = (name) => (document.querySelector(`meta[name="${name}"]`)?.getAttribute('content') || '').trim();
+        const env = window.CMMD_ENV || {};
+        const url = (env.SUPABASE_URL || meta('cmmd-supabase-url')).trim().replace(/\/+$/, '');
+        const anonKey = (env.SUPABASE_ANON_KEY || meta('cmmd-supabase-anon-key')).trim();
+        return { url, anonKey, configured: /^https:\/\/.+/.test(url) && anonKey.length > 20 };
+      },
+
+      /**
+       * INSERT com a chave pública (anon). O RLS do banco só permite inserir — nunca ler.
+       * `Prefer: return=minimal` evita precisar de permissão de SELECT.
+       */
+      async insert(table, row, { timeoutMs = 15000 } = {}) {
+        const { url, anonKey } = this.config();
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+          const res = await fetch(`${url}/rest/v1/${table}`, {
+            method: 'POST',
+            headers: {
+              apikey: anonKey,
+              Authorization: `Bearer ${anonKey}`,
+              'Content-Type': 'application/json',
+              Prefer: 'return=minimal',
+            },
+            body: JSON.stringify(row),
+            signal: ctrl.signal,
+          });
+          if (res.ok) return { ok: true, status: res.status };
+          let body = {};
+          try { body = await res.json(); } catch (_) { /* corpo vazio */ }
+          return { ok: false, status: res.status, code: body.code || '', message: body.message || '' };
+        } catch (err) {
+          return { ok: false, status: 0, code: err.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK', message: String(err.message || err) };
+        } finally {
+          clearTimeout(timer);
+        }
+      },
+    };
+
+    /** Ramos de atuação (rótulos idênticos à restrição CHECK do banco). */
+    const SECTORS = [
+      { label: 'Empresas e Negócios',               desc: 'Fidelidade, cashback e moeda interna.',     emoji: '🏪' },
+      { label: 'Eventos e Festas Sertanejas',       desc: 'Ingresso, consumo e votação de atrações.',  emoji: '🤠' },
+      { label: 'Times de Futebol / Esportes',       desc: 'Sócio-torcedor, enquetes e benefícios.',    emoji: '⚽' },
+      { label: 'Feiras Culturais',                  desc: 'Moeda de feira para expositores e público.', emoji: '🎪' },
+      { label: 'Ajuda Humanitária / ONGs',          desc: 'Rastreio de doações e voluntariado.',       emoji: '🤝' },
+      { label: 'Igrejas e Instituições Religiosas', desc: 'Campanhas, eventos e ações sociais.',       emoji: '⛪' },
+      { label: 'Clubes Recreativos',                desc: 'Associados, bar, eventos e reservas.',      emoji: '🏊' },
+      { label: 'Fraternidades e Lojas',             desc: 'Contribuições internas e eventos.',         emoji: '🏛️' },
+      { label: 'Outros',                            desc: 'Conte para nós o seu ramo.',                emoji: '✨' },
+    ];
+
+    const WEEK_DAYS = [
+      { id: 'SEG', short: 'Seg', long: 'segunda' },
+      { id: 'TER', short: 'Ter', long: 'terça' },
+      { id: 'QUA', short: 'Qua', long: 'quarta' },
+      { id: 'QUI', short: 'Qui', long: 'quinta' },
+      { id: 'SEX', short: 'Sex', long: 'sexta' },
+      { id: 'SAB', short: 'Sáb', long: 'sábado' },
+      { id: 'DOM', short: 'Dom', long: 'domingo' },
+    ];
+
+    const DAY_PERIODS = [
+      { id: 'MANHA', label: 'Manhã', range: '8h às 12h', icon: '🌅', text: 'manhã (8h–12h)' },
+      { id: 'TARDE', label: 'Tarde', range: '12h às 18h', icon: '☀️', text: 'tarde (12h–18h)' },
+      { id: 'NOITE', label: 'Noite', range: '18h às 21h', icon: '🌙', text: 'noite (18h–21h)' },
+    ];
+
+    const COUNTRY_CODES = [
+      { ddi: '55',  label: '🇧🇷 +55' },
+      { ddi: '595', label: '🇵🇾 +595' },
+      { ddi: '54',  label: '🇦🇷 +54' },
+      { ddi: '598', label: '🇺🇾 +598' },
+      { ddi: '1',   label: '🇺🇸 +1' },
+      { ddi: '351', label: '🇵🇹 +351' },
+    ];
+
+    const TIMEZONES = [
+      { id: 'America/Sao_Paulo',              label: 'Brasília (GMT-3)' },
+      { id: 'America/Manaus',                 label: 'Manaus / Cuiabá (GMT-4)' },
+      { id: 'America/Rio_Branco',             label: 'Rio Branco (GMT-5)' },
+      { id: 'America/Noronha',                label: 'Fernando de Noronha (GMT-2)' },
+      { id: 'America/Asuncion',               label: 'Paraguai (Assunção)' },
+      { id: 'America/Argentina/Buenos_Aires', label: 'Argentina (Buenos Aires)' },
+      { id: 'America/Montevideo',             label: 'Uruguai (Montevidéu)' },
+    ];
+
+    /**
+     * Normaliza telefone para o formato internacional E.164 (+DDI + número).
+     * Retorna null se o número não for válido para o país escolhido.
+     */
+    function normalizePhone(ddi, raw) {
+      const value = String(raw || '').trim();
+      if (!value) return null;
+      let digits = value.replace(/\D/g, '');
+      if (value.startsWith('+')) return /^[1-9]\d{7,14}$/.test(digits) ? '+' + digits : null;
+      if (digits.startsWith(ddi) && digits.length > ddi.length + 8) digits = digits.slice(ddi.length); // já veio com DDI
+      digits = digits.replace(/^0+/, ''); // prefixo de tronco (0) usado no PY/AR/BR
+      const rules = {
+        '55':  (d) => /^[1-9]{2}9\d{8}$/.test(d) || /^[1-9]{2}[2-8]\d{7}$/.test(d), // celular (11) ou fixo (10)
+        '595': (d) => /^\d{8,9}$/.test(d),
+        '54':  (d) => /^\d{10,11}$/.test(d),
+        '598': (d) => /^\d{8}$/.test(d),
+        '1':   (d) => /^\d{10}$/.test(d),
+        '351': (d) => /^\d{9}$/.test(d),
+      };
+      const ok = (rules[ddi] || ((d) => /^\d{6,12}$/.test(d)))(digits);
+      return ok ? `+${ddi}${digits}` : null;
+    }
+
+    /** Máscara visual para números brasileiros: (11) 91234-5678 / (11) 3123-4567. */
+    function maskBrPhone(raw) {
+      const d = String(raw).replace(/\D/g, '').slice(0, 11);
+      if (d.length <= 2) return d ? `(${d}` : '';
+      if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+      if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+      return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+    }
+
+    function maskPhoneForDisplay(e164) {
+      return e164.length > 8 ? e164.slice(0, e164.length - 8) + '••••' + e164.slice(-4) : e164;
+    }
+
+    function joinPt(items) {
+      if (items.length <= 1) return items.join('');
+      return items.slice(0, -1).join(', ') + ' e ' + items[items.length - 1];
+    }
+
+    /** Junção de lista com conectivo no idioma atual (… e … / … y … / … and …). */
+    function joinList(items, lang) {
+      if (items.length <= 1) return items.join('');
+      const and = lang === 'es' ? ' y ' : lang === 'en' ? ' and ' : ' e ';
+      return items.slice(0, -1).join(', ') + and + items[items.length - 1];
+    }
+
+    function uuidv4() {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      const b = crypto.getRandomValues(new Uint8Array(16));
+      b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+      const h = Array.from(b, (x) => x.toString(16).padStart(2, '0')).join('');
+      return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+    }
+
+    /** Protocolo exibido ao usuário — o banco gera exatamente o mesmo a partir do id. */
+    function protocolFromId(id) {
+      return 'PAR-' + id.replace(/-/g, '').slice(0, 10).toUpperCase();
+    }
+
+    const Partnership = {
+      step: 1,
+      submitting: false,
+      pendingId: null,      // mesmo id em reenvios → o banco não duplica a solicitação
+      lastSubmission: null,
+      DRAFT_KEY: 'cmmd_partnership_draft',
+
+      init() {
+        // Vitrine de ramos na página
+        $('#sectorShowcase').innerHTML = SECTORS.map((s) => `
+          <button type="button" data-open-b2b data-sector="${escapeHTML(s.label)}"
+            class="rounded-2xl border border-casa-gold/60 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-card">
+            <span class="text-2xl" aria-hidden="true">${s.emoji}</span>
+            <span class="mt-2 block font-semibold leading-snug text-casa-navy">${escapeHTML(t(s.label))}</span>
+            <span class="mt-1 block text-xs text-ink">${escapeHTML(t(s.desc))}</span>
+          </button>`).join('');
+
+        // Opções dos campos (value permanece em PT = valor salvo no banco; texto exibido é traduzido)
+        $('#pfSector').insertAdjacentHTML('beforeend',
+          SECTORS.map((s) => `<option value="${escapeHTML(s.label)}">${escapeHTML(t(s.label))}</option>`).join(''));
+        $$('.pf-ddi').forEach((sel) => {
+          sel.innerHTML = COUNTRY_CODES.map((c) => `<option value="${c.ddi}">${c.label}</option>`).join('');
+        });
+        const localTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (_) { return ''; } })();
+        $('#pfTimezone').innerHTML = TIMEZONES.map((tz) => `<option value="${tz.id}">${t(tz.label)}</option>`).join('');
+        if (TIMEZONES.some((tz) => tz.id === localTz)) $('#pfTimezone').value = localTz;
+        if (localTz === 'America/Asuncion') $$('.pf-ddi').forEach((s) => { s.value = '595'; });
+
+        $('#pfDays').innerHTML = WEEK_DAYS.map((d) => `
+          <label class="pf-chip cursor-pointer select-none rounded-xl border-2 border-gray-200 px-2 py-2.5 text-center text-sm font-semibold text-ink transition hover:border-casa-blue/50">
+            <input type="checkbox" class="sr-only" name="preferred_days" value="${d.id}" />${t(d.short)}
+          </label>`).join('');
+        $('#pfPeriods').innerHTML = DAY_PERIODS.map((p) => `
+          <label class="pf-chip flex cursor-pointer select-none items-center gap-3 rounded-xl border-2 border-gray-200 px-4 py-3 text-ink transition hover:border-casa-blue/50">
+            <input type="checkbox" class="sr-only" name="preferred_periods" value="${p.id}" />
+            <span class="text-xl" aria-hidden="true">${p.icon}</span>
+            <span><span class="block font-semibold text-casa-navy">${t(p.label)}</span><span class="block text-xs">${t(p.range)}</span></span>
+          </label>`).join('');
+
+        // Abertura do modal por qualquer botão [data-open-b2b]
+        document.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-open-b2b]');
+          if (btn) this.open(btn.dataset.sector || null);
+        });
+
+        // Interações dos campos
+        $('#pfSector').addEventListener('change', () => this.toggleOther());
+        $('#pfApprover').addEventListener('change', () => this.toggleApprover());
+        $('#pfDescription').addEventListener('input', (e) => { $('#pfDescriptionCount').textContent = e.target.value.length; });
+        $$('.pf-phone').forEach((input) => {
+          input.addEventListener('input', () => {
+            if ($('#' + input.dataset.ddi).value === '55' && !input.value.trim().startsWith('+')) input.value = maskBrPhone(input.value);
+          });
+        });
+        $$('.pf-days-preset').forEach((b) => b.addEventListener('click', () => {
+          const want = b.dataset.days.split(',');
+          $$('input[name="preferred_days"]').forEach((c) => { c.checked = want.includes(c.value); });
+          this.paintChips(); setError('pfDays', ''); this.saveDraft();
+        }));
+        $('#pfForm').addEventListener('change', (e) => {
+          if (e.target.name === 'preferred_days') setError('pfDays', '');
+          if (e.target.name === 'preferred_periods') setError('pfPeriods', '');
+          this.paintChips();
+        });
+        $('#pfForm').addEventListener('input', (e) => {
+          if (e.target.id) setError(e.target.id, '');
+          if (e.target.id === 'pfTimeFrom') setError('pfTimeTo', '');
+          $('#pfSubmitError').classList.add('hidden');
+          this.saveDraft();
+        });
+        $('#pfConsent').addEventListener('change', () => setError('pfConsent', ''));
+
+        $('#pfNext').addEventListener('click', () => this.next());
+        $('#pfBack').addEventListener('click', () => this.back());
+        $('#pfForm').addEventListener('submit', (e) => { e.preventDefault(); this.next(); });
+      },
+
+      open(sector) {
+        if (this.step === 'done' || !this.restoreDraft()) this.reset();
+        if (sector && SECTORS.some((s) => s.label === sector)) {
+          $('#pfSector').value = sector;
+          this.toggleOther();
+          setError('pfSector', '');
+        }
+        Modal.open('b2bModal');
+        const scroller = $('#pfScroll');
+        if (scroller && this.step === 1) scroller.scrollTop = 0;
+      },
+
+      reset() {
+        $('#pfForm').reset();
+        this.pendingId = null;
+        this.submitting = false;
+        $('#pfDescriptionCount').textContent = '0';
+        $$('#pfForm .field-error').forEach((el) => setError(el.dataset.for, ''));
+        $('#pfSubmitError').classList.add('hidden');
+        const tz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (_) { return ''; } })();
+        $('#pfTimezone').value = TIMEZONES.some((t) => t.id === tz) ? tz : 'America/Sao_Paulo';
+        $$('.pf-ddi').forEach((s) => { s.value = tz === 'America/Asuncion' ? '595' : '55'; });
+        this.toggleOther();
+        this.toggleApprover();
+        this.paintChips();
+        this.goTo(1);
+      },
+
+      toggleOther() {
+        const isOther = $('#pfSector').value === 'Outros';
+        $('#pfSectorOtherWrap').classList.toggle('hidden', !isOther);
+        if (!isOther) { $('#pfSectorOther').value = ''; setError('pfSectorOther', ''); }
+      },
+
+      toggleApprover() {
+        const needs = $('#pfApprover').value === 'SIM';
+        $('#pfApproverWhoWrap').classList.toggle('hidden', !needs);
+        if (!needs) { $('#pfApproverWho').value = ''; setError('pfApproverWho', ''); }
+      },
+
+      paintChips() {
+        $$('.pf-chip').forEach((chip) => {
+          const on = chip.querySelector('input').checked;
+          chip.classList.toggle('border-casa-blue', on);
+          chip.classList.toggle('bg-casa-sky', on);
+          chip.classList.toggle('text-casa-navy', on);
+          chip.classList.toggle('border-gray-200', !on);
+        });
+      },
+
+      checked(name) {
+        return $$(`input[name="${name}"]:checked`).map((c) => c.value);
+      },
+
+      goTo(step) {
+        this.step = step;
+        $$('#pfForm [data-pstep]').forEach((el) => el.classList.toggle('hidden', String(el.dataset.pstep) !== String(step)));
+
+        const labels = ['Instituição', 'Responsável', 'Disponibilidade'];
+        const cur = step === 'done' ? 4 : step;
+        $('#pfSteps').innerHTML = labels.map((label, i) => {
+          const n = i + 1, done = n < cur, active = n === cur;
+          return `<li class="flex flex-1 items-center gap-2" ${active ? 'aria-current="step"' : ''}>
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${done ? 'bg-up text-white' : active ? 'bg-casa-gold text-casa-navy' : 'bg-gray-100 text-ink-soft'}">${done ? '✓' : n}</span>
+            <span class="text-xs font-semibold sm:text-sm ${active ? 'text-casa-navy' : 'text-ink-soft'} ${active ? '' : 'hidden sm:inline'}">${t(label)}</span>
+            ${n < 3 ? `<span class="h-0.5 flex-1 rounded ${done ? 'bg-up' : 'bg-gray-200'}"></span>` : ''}
+          </li>`;
+        }).join('');
+
+        const back = $('#pfBack'), next = $('#pfNext');
+        if (step === 1) {
+          back.textContent = t('Cancelar');
+          back.className = 'rounded-xl border border-down/40 px-5 py-3 font-semibold text-down hover:bg-down-soft';
+        } else {
+          back.textContent = t('Voltar');
+          back.className = 'rounded-xl border border-gray-300 px-5 py-3 font-semibold text-ink-strong hover:bg-gray-50';
+        }
+        back.classList.toggle('hidden', step === 'done');
+        next.classList.toggle('ml-auto', step === 'done');
+        next.textContent = step === 'done' ? t('Fechar') : step === 3 ? t('Enviar Solicitação de Parceria') : t('Continuar');
+
+        // Leva o usuário ao topo do formulário (no celular o card de vantagens fica acima)
+        const scroller = $('#pfScroll');
+        if (scroller && Modal.active) {
+          const top = step === 1 ? 0 : $('#pfForm').offsetTop;
+          scroller.scrollTop = Math.min(scroller.scrollTop, top);
+        }
+      },
+
+      /** Valida a etapa e retorna true/false, marcando os campos com erro. */
+      validateStep(step) {
+        let ok = true;
+        const fail = (id, msg) => { setError(id, msg); ok = false; };
+        const val = (id) => $('#' + id).value.trim();
+
+        if (step === 1) {
+          const name = val('pfCompanyName');
+          if (name.length < 3 || !/\p{L}/u.test(name)) fail('pfCompanyName', t('Informe o nome da empresa ou instituição.'));
+          if (val('pfAddress').length < 10) fail('pfAddress', t('Informe o endereço completo (rua, número, cidade e estado).'));
+          if (!val('pfSector')) fail('pfSector', t('Selecione o ramo de atuação.'));
+          else if (val('pfSector') === 'Outros' && val('pfSectorOther').length < 3) fail('pfSectorOther', t('Descreva o ramo de atuação.'));
+          if (val('pfDescription').length < 30) fail('pfDescription', t('Descreva a instituição com pelo menos 30 caracteres.'));
+        }
+
+        if (step === 2) {
+          const director = val('pfDirector');
+          if (director.split(/\s+/).filter((p) => p.length >= 2).length < 2 || /\d/.test(director)) {
+            fail('pfDirector', t('Informe nome e sobrenome do responsável.'));
+          }
+          if (!val('pfWhatsapp')) fail('pfWhatsapp', t('Informe o WhatsApp de contato.'));
+          else if (!normalizePhone($('#pfWhatsappDdi').value, val('pfWhatsapp'))) fail('pfWhatsapp', t('WhatsApp inválido. Confira o DDD e o número.'));
+          if (val('pfPhone') && !normalizePhone($('#pfPhoneDdi').value, val('pfPhone'))) fail('pfPhone', t('Telefone inválido. Confira o número ou deixe em branco.'));
+          const email = val('pfEmail');
+          if (!email) fail('pfEmail', t('Informe um e-mail para contato.'));
+          else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) fail('pfEmail', t('E-mail inválido.'));
+          if (!['SIM', 'NAO'].includes(val('pfApprover'))) fail('pfApprover', t('Informe se a criação depende de mais alguém.'));
+          else if (val('pfApprover') === 'SIM' && val('pfApproverWho').replace(/\s+/g, ' ').length < 5) {
+            fail('pfApproverWho', t('Informe quem é a pessoa que autoriza (nome e, se possível, cargo).'));
+          }
+        }
+
+        if (step === 3) {
+          if (!this.checked('preferred_days').length) fail('pfDays', t('Selecione pelo menos um dia da semana.'));
+          if (!this.checked('preferred_periods').length) fail('pfPeriods', t('Selecione pelo menos um período.'));
+          const from = val('pfTimeFrom'), to = val('pfTimeTo');
+          if ((from && !to) || (!from && to)) fail('pfTimeTo', t('Preencha o horário inicial e o final, ou deixe ambos em branco.'));
+          else if (from && to && from >= to) fail('pfTimeTo', t('O horário final deve ser depois do inicial.'));
+          if (!$('#pfConsent').checked) fail('pfConsent', t('É necessário autorizar o contato para enviar a solicitação.'));
+        }
+
+        if (!ok) {
+          const first = $$('#pfForm .field-error:not(.hidden)')[0];
+          const field = first && document.getElementById(first.dataset.for);
+          if (field && field.focus) field.focus({ preventScroll: false });
+          else if (first) first.scrollIntoView({ block: 'center' });
+        }
+        return ok;
+      },
+
+      /** Monta a linha exatamente como a tabela business_applications espera. */
+      buildRow() {
+        const v = (id) => $('#' + id).value.trim();
+        const sector = v('pfSector');
+        this.pendingId = this.pendingId || uuidv4();
+        return {
+          id: this.pendingId,
+          company_name: v('pfCompanyName').replace(/\s+/g, ' '),
+          company_address: v('pfAddress').replace(/\s+/g, ' '),
+          business_sector: sector,
+          business_sector_other: sector === 'Outros' ? v('pfSectorOther') : null,
+          company_description: v('pfDescription'),
+          director_name: v('pfDirector').replace(/\s+/g, ' '),
+          whatsapp: normalizePhone($('#pfWhatsappDdi').value, v('pfWhatsapp')),
+          alt_phone: v('pfPhone') ? normalizePhone($('#pfPhoneDdi').value, v('pfPhone')) : null,
+          email: v('pfEmail').toLowerCase(),
+          needs_creation_approver: v('pfApprover') === 'SIM',
+          approver_name: v('pfApprover') === 'SIM' ? v('pfApproverWho').replace(/\s+/g, ' ') : null,
+          preferred_days: this.checked('preferred_days'),
+          preferred_periods: this.checked('preferred_periods'),
+          preferred_time_from: v('pfTimeFrom') || null,
+          preferred_time_to: v('pfTimeTo') || null,
+          timezone: v('pfTimezone'),
+          consent_lgpd: true,
+          source: 'site',
+        };
+      },
+
+      async next() {
+        if (this.submitting) return;
+        if (this.step === 'done') { Modal.close('b2bModal'); return; }
+        if (!this.validateStep(this.step)) { toast(t('Revise os campos destacados em vermelho.'), 'error'); return; }
+        if (this.step < 3) { this.goTo(this.step + 1); return; }
+        await this.submit();
+      },
+
+      back() {
+        if (this.submitting) return;
+        if (this.step === 1) { Modal.close('b2bModal'); return; }
+        if (typeof this.step === 'number') this.goTo(this.step - 1);
+      },
+
+      async submit() {
+        const row = this.buildRow();
+        const btn = $('#pfNext');
+        this.submitting = true;
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 3a9 9 0 1 0 9 9" stroke-linecap="round"/></svg> ' + t('Enviando…');
+        $('#pfSubmitError').classList.add('hidden');
+
+        // 1) Backend (fonte da verdade): valida e grava em business_applications.
+        //    O reenvio com o mesmo id é idempotente — o backend devolve a solicitação original.
+        let result = null;
+        let backendProtocol = null;
+        try {
+          const res = await fetch(API_URL + '/api/b2b/partnerships', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(row),
+          });
+          const json = await res.json().catch(() => ({}));
+          if (res.ok) {
+            backendProtocol = json.data && json.data.protocol;
+            result = { ok: true, status: res.status };
+          } else {
+            const err = json.error || {};
+            result = { ok: false, status: res.status, code: err.code, message: err.message || '' };
+          }
+        } catch (_) {
+          result = null; // backend inacessível → tenta o caminho antigo abaixo
+        }
+
+        // 2) Contingência (backend fora do ar): Supabase direto ou demonstração local.
+        if (!result) {
+          const cfg = SupabaseREST.config();
+          if (cfg.configured) {
+            result = await SupabaseREST.insert('business_applications', row);
+            // Reenvio após falha de rede: se a 1ª tentativa chegou ao banco, o id já existe → sucesso.
+            if (!result.ok && result.status === 409 && result.code === '23505' && /business_applications_pkey/.test(result.message)) {
+              result = { ok: true, status: 201 };
+            }
+          } else {
+            const list = safeStorageGet('cmmd_partnership_demo', []);
+            list.unshift({ ...row, created_at: new Date().toISOString() });
+            safeStorageSet('cmmd_partnership_demo', list.slice(0, 20));
+            result = { ok: true, status: 201, demo: true };
+          }
+        }
+
+        this.submitting = false;
+        btn.disabled = false;
+
+        if (!result.ok) {
+          btn.textContent = t('Enviar Solicitação de Parceria');
+          const msg = result.message || this.errorMessage(result);
+          $('#pfSubmitError').textContent = msg;
+          $('#pfSubmitError').classList.remove('hidden');
+          toast(msg, 'error');
+          return;
+        }
+
+        this.lastSubmission = { ...row, protocol: backendProtocol || protocolFromId(row.id), demo: !!result.demo };
+        this.showSuccess(this.lastSubmission);
+        this.clearDraft();
+        this.pendingId = null;
+        this.goTo('done');
+        toast(t('Solicitação de parceria enviada!'));
+      },
+
+      errorMessage(r) {
+        const m = `${r.code} ${r.message}`;
+        if (r.code === 'TIMEOUT' || r.code === 'NETWORK') return t('Não foi possível conectar. Verifique sua internet e tente novamente — seus dados continuam preenchidos.');
+        if (/TOO_MANY_APPLICATIONS/.test(m)) return t('Já recebemos solicitações recentes com este e-mail ou WhatsApp. Nossa equipe entrará em contato em breve.');
+        if (/INVALID_|check constraint|violates/.test(m)) return t('Alguns dados não foram aceitos. Revise as informações e tente novamente.');
+        if (r.status === 401 || r.status === 403 || r.status === 404) return t('O envio está temporariamente indisponível. Tente novamente mais tarde.');
+        return t('Não foi possível enviar sua solicitação agora. Tente novamente em instantes.');
+      },
+
+      showSuccess(s) {
+        const lang = curLang();
+        const firstName = s.director_name.split(' ')[0];
+        const days = s.preferred_days;
+        const weekdays = ['SEG', 'TER', 'QUA', 'QUI', 'SEX'];
+        const allWeek = days.length === 7;
+        const bizWeek = days.length === 5 && weekdays.every((d) => days.includes(d));
+        const dayLongs = WEEK_DAYS.filter((d) => days.includes(d.id)).map((d) => t(d.long));
+        const periods = joinList(DAY_PERIODS.filter((p) => s.preferred_periods.includes(p.id)).map((p) => t(p.text)), lang);
+        const tzObj = TIMEZONES.find((z) => z.id === s.timezone);
+        const tz = tzObj ? t(tzObj.label) : s.timezone;
+        const wa = maskPhoneForDisplay(s.whatsapp);
+        const from = s.preferred_time_from, to = s.preferred_time_to;
+
+        let text;
+        if (lang === 'es') {
+          const daysText = allWeek ? t('em qualquer dia da semana') : bizWeek ? t('de segunda a sexta-feira') : 'los días ' + joinList(dayLongs, lang);
+          const tw = from ? `, preferentemente de ${from} a ${to}` : '';
+          text = `¡Gracias, ${firstName}! Recibimos los datos de ${s.company_name}. ` +
+                 `Nuestro equipo se pondrá en contacto por WhatsApp ${wa} ${daysText}, ` +
+                 `en el horario de la ${periods}${tw} — zona horaria ${tz}.`;
+        } else if (lang === 'en') {
+          const daysText = allWeek ? t('em qualquer dia da semana') : bizWeek ? t('de segunda a sexta-feira') : 'on ' + joinList(dayLongs, lang);
+          const tw = from ? `, preferably from ${from} to ${to}` : '';
+          text = `Thank you, ${firstName}! We've received ${s.company_name}'s details. ` +
+                 `Our team will reach out on WhatsApp ${wa} ${daysText}, ` +
+                 `in the ${periods}${tw} — time zone ${tz}.`;
+        } else {
+          const daysText = allWeek ? 'em qualquer dia da semana' : bizWeek ? 'de segunda a sexta-feira' : 'nos dias ' + joinList(dayLongs, lang);
+          const tw = from ? `, preferencialmente das ${from} às ${to}` : '';
+          text = `Obrigado, ${firstName}! Recebemos os dados de ${s.company_name}. ` +
+                 `Nossa equipe entrará em contato pelo WhatsApp ${wa} ${daysText}, ` +
+                 `no período da ${periods}${tw} — fuso ${tz}.`;
+        }
+
+        $('#pfProtocol').textContent = s.protocol;
+        $('#pfSuccessText').textContent = text;
+        $('#pfDemoNote').classList.toggle('hidden', !s.demo);
+        $('#pfDemoNote').textContent = s.demo
+          ? t('Modo demonstração: o Supabase ainda não foi configurado nesta página, então a solicitação ficou salva apenas neste navegador.')
+          : '';
+      },
+
+      // ---------- Rascunho automático (não perde o preenchimento ao fechar o modal)
+      saveDraft() {
+        if (this.step === 'done') return;
+        const data = {};
+        $$('#pfForm .pf-input, #pfForm .pf-ddi').forEach((el) => { if (el.id) data[el.id] = el.value; });
+        data.days = this.checked('preferred_days');
+        data.periods = this.checked('preferred_periods');
+        data.step = this.step;
+        safeStorageSet(this.DRAFT_KEY, data);
+      },
+
+      restoreDraft() {
+        const data = safeStorageGet(this.DRAFT_KEY, null);
+        if (!data) return false;
+        this.reset();
+        Object.entries(data).forEach(([id, value]) => {
+          const el = document.getElementById(id);
+          if (el && (el.classList.contains('pf-input') || el.classList.contains('pf-ddi'))) el.value = value;
+        });
+        $$('input[name="preferred_days"]').forEach((c) => { c.checked = (data.days || []).includes(c.value); });
+        $$('input[name="preferred_periods"]').forEach((c) => { c.checked = (data.periods || []).includes(c.value); });
+        $('#pfDescriptionCount').textContent = $('#pfDescription').value.length;
+        this.toggleOther();
+        this.paintChips();
+        this.goTo([1, 2, 3].includes(data.step) ? data.step : 1);
+        return true;
+      },
+
+      clearDraft() {
+        try { localStorage.removeItem(this.DRAFT_KEY); } catch (_) { /* indisponível */ }
+      },
+    };
+
+    /* -------------------------------------------------------
+       10. AVISO LEGAL
+       ------------------------------------------------------- */
+    const Disclaimer = {
+      init() {
+        $$('.disclaimer-text').forEach(el => { el.setAttribute('data-i18n-skip', ''); el.textContent = t(DISCLAIMER); });
+      },
+    };
+
+    /* -------------------------------------------------------
+       11. INICIALIZAÇÃO
+       ------------------------------------------------------- */
+    function init() {
+      $('#year').textContent = new Date().getFullYear();
+      Market.init();
+      Disclaimer.init();
+      Modal.init();
+      Ticker.render();
+      Carousel.init();
+      P2P.init();
+      Payment.init();
+      Partnership.init();
+
+      // Traduz o conteúdo estático para o idioma salvo e reage à troca de idioma
+      if (window.I18N) {
+        window.I18N.apply();
+        window.I18N.onChange(() => {
+          refreshLiveLabels();
+          P2P.updateSummary();
+          Disclaimer.init();
+          try { NATIVE_ASSETS.forEach(a => LiveMarket.loadMovements(a)); } catch (_) {}
+          if (Partnership.lastSubmission && Partnership.step === 'done') Partnership.showSuccess(Partnership.lastSubmission);
+        });
+      }
+
+      // Usuário logado: chip com nome + "Sair" no cabeçalho e wallet pré-preenchida na Mesa OTC
+      if (window.CMMDAuth) {
+        CMMDAuth.mountUserChip();
+        const session = CMMDAuth.getSession();
+        const walletInput = $('#p2pWallet');
+        if (session && session.wallet && walletInput && !walletInput.value) {
+          walletInput.value = session.wallet;
+          walletInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+
+      // Cotações e movimentação reais (Solana / APIs públicas)
+      LiveMarket.start();
+
+      // Deep link vindo do Painel: index.html?otc=BDC abre a Mesa OTC com o ativo escolhido
+      const otcAsset = (new URLSearchParams(location.search).get('otc') || '').toUpperCase();
+      if (otcAsset && (NATIVE_ASSETS.some(a => a.id === otcAsset) || OTHER_ASSETS[otcAsset])) {
+        setTimeout(() => P2P.openWithAsset(otcAsset), 300);
+      }
+
+      // Fallback: simulação local só enquanto nenhuma cotação real chegou
+      setInterval(() => {
+        if (LiveMarket.live) return;
+        Market.tick();
+        Carousel.refresh();
+        Ticker.render();
+        P2P.updateSummary();
+      }, 4000);
+    }
+
+    // Exposto para testes automatizados e depuração
+    window.CMMD = { Market, LiveMarket, Carousel, P2P, Payment, Partnership, SupabaseREST, normalizePhone, Modal, DISCLAIMER, parseBRL, maskBRL, isValidWallet };
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+  </script>
+</body>
+</html>

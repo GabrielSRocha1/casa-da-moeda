@@ -1,0 +1,104 @@
+[
+ {
+  "id": "27c54fe2-e8e3-4904-aba6-f91ac4d8dd51",
+  "company_name": "Associação Cultural Vale do Sol",
+  "company_address": "Rua das Palmeiras, 120 - Centro, Campina Grande - PB, 58400-000, Brasil",
+  "business_sector": "Eventos e Festas Sertanejas",
+  "business_sector_other": null,
+  "company_description": "Organizamos a festa junina regional há 15 anos, com 40 mil visitantes por edição.",
+  "director_name": "Maria Aparecida Souza",
+  "whatsapp": "+5583991234567",
+  "alt_phone": null,
+  "email": "diretoria@valedosol.org.br",
+  "preferred_days": [
+   "SEG",
+   "TER",
+   "QUA",
+   "QUI",
+   "SEX"
+  ],
+  "preferred_periods": [
+   "TARDE"
+  ],
+  "preferred_time_from": "14:00",
+  "preferred_time_to": "18:00",
+  "timezone": "America/Sao_Paulo",
+  "consent_lgpd": true,
+  "source": "site"
+ },
+ {
+  "id": "a16db80f-bb59-4e1b-80c3-d44d29fb2494",
+  "company_name": "Cooperativa Agro Sul",
+  "company_address": "Av. Brasil, 1000, Cascavel - PR, Brasil",
+  "business_sector": "Outros",
+  "business_sector_other": "Cooperativa agrícola",
+  "company_description": "Cooperativa com 300 produtores rurais associados na região oeste.",
+  "director_name": "João Pedro Martins",
+  "whatsapp": "+5545999887766",
+  "alt_phone": "+595981123456",
+  "email": "joao@agrosul.coop",
+  "preferred_days": [
+   "SAB"
+  ],
+  "preferred_periods": [
+   "MANHA",
+   "NOITE"
+  ],
+  "preferred_time_from": null,
+  "preferred_time_to": null,
+  "timezone": "America/Asuncion",
+  "consent_lgpd": true,
+  "source": "site"
+ },
+ {
+  "id": "5f31b64d-20a8-45f0-b5b7-29d5d1ae2f94",
+  "company_name": "Associação Cultural Vale do Sol",
+  "company_address": "Rua das Palmeiras, 120 - Centro, Campina Grande - PB, 58400-000, Brasil",
+  "business_sector": "Eventos e Festas Sertanejas",
+  "business_sector_other": null,
+  "company_description": "Organizamos a festa junina regional há 15 anos, com 40 mil visitantes por edição.",
+  "director_name": "Maria Aparecida Souza",
+  "whatsapp": "+5583991234567",
+  "alt_phone": null,
+  "email": "diretoria@valedosol.org.br",
+  "preferred_days": [
+   "SEG",
+   "TER",
+   "QUA",
+   "QUI",
+   "SEX"
+  ],
+  "preferred_periods": [
+   "TARDE"
+  ],
+  "preferred_time_from": "14:00",
+  "preferred_time_to": "18:00",
+  "timezone": "America/Sao_Paulo",
+  "consent_lgpd": true,
+  "source": "site"
+ },
+ {
+  "id": "1f921230-4e94-46e8-be60-a7907ebacc3a",
+  "company_name": "Cooperativa Agro Sul",
+  "company_address": "Av. Brasil, 1000, Cascavel - PR, Brasil",
+  "business_sector": "Outros",
+  "business_sector_other": "Cooperativa agrícola",
+  "company_description": "Cooperativa com 300 produtores rurais associados na região oeste.",
+  "director_name": "João Pedro Martins",
+  "whatsapp": "+5545999887766",
+  "alt_phone": "+595981123456",
+  "email": "joao@agrosul.coop",
+  "preferred_days": [
+   "SAB"
+  ],
+  "preferred_periods": [
+   "MANHA",
+   "NOITE"
+  ],
+  "preferred_time_from": null,
+  "preferred_time_to": null,
+  "timezone": "America/Asuncion",
+  "consent_lgpd": true,
+  "source": "site"
+ }
+]

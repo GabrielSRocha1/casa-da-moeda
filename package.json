@@ -1,0 +1,18 @@
+{
+  "name": "casa-da-moeda-master-digital",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Casa da Moeda Master Digital — site, API e banco Supabase",
+  "scripts": {
+    "setup": "npm --prefix frontend install && npm --prefix backend install && npm --prefix supabase install",
+    "dev:site": "npm --prefix frontend run dev",
+    "dev:api": "npm --prefix backend run dev",
+    "build:css": "npm --prefix frontend run build:css",
+    "build:api": "npm --prefix backend run build",
+    "test": "npm --prefix backend test && npm --prefix supabase test && npm --prefix frontend test",
+    "test:backend": "npm --prefix backend test",
+    "test:supabase": "npm --prefix supabase test",
+    "test:site": "npm --prefix frontend test"
+  },
+  "engines": { "node": ">=20.10" }
+}

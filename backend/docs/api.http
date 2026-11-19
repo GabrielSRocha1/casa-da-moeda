@@ -1,0 +1,79 @@
+### Casa da Moeda Master Digital — requisições de exemplo
+### Use com a extensão "REST Client" (VS Code) ou o cliente HTTP do JetBrains.
+
+@base = http://localhost:3333
+@secret = dev-webhook-secret-change-me
+# Troque pelo endereço público da sua Verum Wallet (Solana):
+@wallet = 65TXQe7RKv4P86qK7Lznap7vbX1KYprbe2Yte3XyCbPB
+
+### Saúde
+GET {{base}}/health
+
+### A. Lista de ativos nativos
+GET {{base}}/api/tokens
+
+### A. Detalhe de um token
+GET {{base}}/api/tokens/BDC
+
+### A. Movimentação on-chain real (RPC pública da Solana)
+GET {{base}}/api/tokens/VRC/activity?limit=10
+
+### Validar carteira
+POST {{base}}/api/wallet/validate
+Content-Type: application/json
+
+{ "address": "{{wallet}}" }
+
+### B. Criar ordem P2P
+# @name order
+POST {{base}}/api/p2p/orders
+Content-Type: application/json
+Idempotency-Key: checkout-exemplo-0001
+
+{
+  "assetSymbol": "BDC",
+  "fiatAmount": 500,
+  "userWalletAddress": "{{wallet}}"
+}
+
+### B. Consultar ordem
+GET {{base}}/api/p2p/orders/{{order.response.body.data.id}}?qrcode=false
+
+### B. Webhook: pagamento confirmado
+PATCH {{base}}/api/p2p/orders/{{order.response.body.data.id}}/status
+Content-Type: application/json
+x-webhook-secret: {{secret}}
+
+{ "status": "PAID", "paymentReference": "E2E-PIX-EXEMPLO" }
+
+### B. Webhook: tokens enviados para a Verum Wallet
+PATCH {{base}}/api/p2p/orders/{{order.response.body.data.id}}/status
+Content-Type: application/json
+x-webhook-secret: {{secret}}
+
+{ "status": "COMPLETED" }
+
+### B. Cancelar ordem (usuário) — só funciona se estiver PENDING
+POST {{base}}/api/p2p/orders/{{order.response.body.data.id}}/cancel
+
+### C. Categorias B2B
+GET {{base}}/api/b2b/tokens/categories
+
+### C. Criar utility token
+# @name b2b
+POST {{base}}/api/b2b/tokens/create
+Content-Type: application/json
+
+{
+  "tokenName": "Rodeio Coin",
+  "symbol": "RODEIO",
+  "category": "Festas Sertanejas",
+  "purpose": "Ingresso, consumo no bar e votação da atração do próximo ano.",
+  "creatorWallet": "{{wallet}}",
+  "contactEmail": "contato@rodeio.com",
+  "totalSupply": "1000000",
+  "acceptUtilityTerms": true
+}
+
+### C. Consultar solicitação pelo protocolo
+GET {{base}}/api/b2b/tokens/requests/{{b2b.response.body.data.protocol}}

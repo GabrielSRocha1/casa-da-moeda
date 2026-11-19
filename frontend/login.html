@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrar — Casa da Moeda Master Digital</title>
+
+  <link rel="icon" type="image/png" href="./logo-128px-MD.png" />
+  <link rel="apple-touch-icon" href="./logo-128px-MD.png" />
+  <meta name="description" content="Acesse ou crie sua conta na Casa da Moeda Master Digital." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/app.css" />
+  <!-- Variáveis públicas geradas do .env (Supabase). Veja scripts/env.mjs -->
+  <script src="./assets/env.js"></script>
+  <script src="./assets/auth.js"></script>
+
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .auth-bg {
+      background:
+        radial-gradient(800px 400px at 85% -10%, rgba(245,196,0,.35), transparent 60%),
+        radial-gradient(600px 300px at -10% 110%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(135deg, #082B63 0%, #0B4AA8 100%);
+    }
+    .toast { animation: toast-in 300ms ease both; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+
+<body class="auth-bg min-h-screen font-sans text-ink">
+
+  <main class="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-4 py-10">
+
+    <!-- Marca -->
+    <div class="mb-6 flex items-center justify-center gap-3">
+      <img src="./logo-128px-MD.png" width="48" height="48" alt="Mastter Digital" class="h-12 w-12 rounded-full" />
+      <span class="leading-tight">
+        <span class="block font-display text-lg font-bold text-white">Casa da Moeda</span>
+        <span class="block text-[11px] font-semibold uppercase tracking-[0.2em] text-casa-gold">Master Digital</span>
+      </span>
+    </div>
+
+    <div class="overflow-hidden rounded-3xl bg-white shadow-2xl">
+
+      <!-- Abas -->
+      <div class="grid grid-cols-2 border-b border-gray-100" role="tablist">
+        <button type="button" id="tabLogin" role="tab" aria-selected="true"
+          class="border-b-2 border-casa-blue py-4 font-display text-sm font-bold text-casa-navy">Entrar</button>
+        <button type="button" id="tabRegister" role="tab" aria-selected="false"
+          class="border-b-2 border-transparent py-4 font-display text-sm font-bold text-ink-soft hover:text-casa-navy">Criar conta</button>
+      </div>
+
+      <!-- ============ FORMULÁRIO: ENTRAR ============ -->
+      <form id="formLogin" class="space-y-4 px-6 py-6" novalidate>
+        <div>
+          <label for="loginEmail" class="mb-1.5 block text-sm font-semibold text-ink-strong">E-mail</label>
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="voce@exemplo.com"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+        </div>
+        <div>
+          <label for="loginPass" class="mb-1.5 block text-sm font-semibold text-ink-strong">Senha</label>
+          <input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+        </div>
+        <p id="loginError" class="hidden rounded-xl bg-down-soft px-4 py-3 text-sm font-semibold text-down-dark"></p>
+        <button type="submit"
+          class="w-full rounded-xl bg-casa-blue px-6 py-4 font-display text-lg font-bold text-white shadow-lg transition hover:bg-casa-navy focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-blue/40">
+          Entrar
+        </button>
+        <p class="text-center text-sm text-ink-soft">
+          Ainda não tem conta?
+          <button type="button" class="font-semibold text-casa-blue hover:underline" data-switch="register">Criar conta</button>
+        </p>
+      </form>
+
+      <!-- ============ FORMULÁRIO: CRIAR CONTA ============ -->
+      <form id="formRegister" class="hidden space-y-4 px-6 py-6" novalidate>
+        <div>
+          <label for="regName" class="mb-1.5 block text-sm font-semibold text-ink-strong">Nome completo</label>
+          <input id="regName" type="text" autocomplete="name" placeholder="Seu nome"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+          <p class="field-error mt-1 hidden text-sm text-down" data-for="name"></p>
+        </div>
+
+        <div>
+          <label for="regEmail" class="mb-1.5 block text-sm font-semibold text-ink-strong">E-mail</label>
+          <input id="regEmail" type="email" autocomplete="email" placeholder="voce@exemplo.com"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+          <p class="mt-1 text-xs text-ink-soft">Você receberá um código de confirmação neste e-mail.</p>
+          <p class="field-error mt-1 hidden text-sm text-down" data-for="email"></p>
+        </div>
+
+        <div>
+          <label for="regPhone" class="mb-1.5 block text-sm font-semibold text-ink-strong">Telefone (WhatsApp)</label>
+          <div class="flex gap-2">
+            <select id="regDdi" data-i18n-skip aria-label="Código do país"
+              class="shrink-0 rounded-xl border border-gray-300 px-2 py-3 text-sm font-semibold text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15">
+              <option value="55" selected>🇧🇷 +55</option>
+              <option value="595">🇵🇾 +595</option>
+              <option value="54">🇦🇷 +54</option>
+              <option value="598">🇺🇾 +598</option>
+              <option value="1">🇺🇸 +1</option>
+              <option value="351">🇵🇹 +351</option>
+            </select>
+            <input id="regPhone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="(99) 99999-9999"
+              class="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+          </div>
+          <p class="mt-1 text-xs text-ink-soft">Você receberá um código de confirmação por SMS.</p>
+          <p class="field-error mt-1 hidden text-sm text-down" data-for="phone"></p>
+        </div>
+
+        <div>
+          <label for="regWallet" class="mb-1.5 block text-sm font-semibold text-ink-strong">Endereço da wallet de recebimento (Solana)</label>
+          <div class="flex gap-2">
+            <input id="regWallet" type="text" autocomplete="off" spellcheck="false" placeholder="Endereço público da sua Verum Wallet"
+              class="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 font-mono text-sm text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+            <button type="button" id="regPaste" class="shrink-0 rounded-xl border border-casa-blue/30 px-4 text-sm font-semibold text-casa-blue hover:bg-casa-sky">Colar</button>
+          </div>
+          <p class="mt-1 text-xs text-ink-soft">É para onde seus ativos serão enviados. Nunca informe sua frase-semente (seed phrase).</p>
+          <p class="field-error mt-1 hidden text-sm text-down" data-for="wallet"></p>
+        </div>
+
+        <div>
+          <label for="regPass" class="mb-1.5 block text-sm font-semibold text-ink-strong">Senha de acesso</label>
+          <input id="regPass" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+          <p class="field-error mt-1 hidden text-sm text-down" data-for="password"></p>
+        </div>
+
+        <div>
+          <label for="regPass2" class="mb-1.5 block text-sm font-semibold text-ink-strong">Confirmar senha</label>
+          <input id="regPass2" type="password" autocomplete="new-password" placeholder="Repita a senha"
+            class="w-full rounded-xl border border-gray-300 px-4 py-3 text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+          <p class="field-error mt-1 hidden text-sm text-down" data-for="password2"></p>
+        </div>
+
+        <p id="regError" class="hidden rounded-xl bg-down-soft px-4 py-3 text-sm font-semibold text-down-dark"></p>
+
+        <button type="submit"
+          class="w-full rounded-xl bg-up px-6 py-4 font-display text-lg font-bold text-white shadow-lg transition hover:bg-up-dark focus:outline-none focus-visible:ring-4 focus-visible:ring-up/40">
+          Criar minha conta
+        </button>
+        <p class="text-center text-sm text-ink-soft">
+          Já tem conta?
+          <button type="button" class="font-semibold text-casa-blue hover:underline" data-switch="login">Entrar</button>
+        </p>
+      </form>
+
+      <!-- ============ ETAPA: CONFIRMAR E-MAIL E TELEFONE ============ -->
+      <section id="formVerify" class="hidden space-y-5 px-6 py-6">
+        <div>
+          <h2 class="font-display text-lg font-bold text-casa-navy">Confirme seus dados</h2>
+          <p class="mt-1 text-sm text-ink-soft">Enviamos códigos de 6 dígitos para o seu e-mail e por SMS para o seu telefone.</p>
+        </div>
+
+        <!-- E-mail -->
+        <div id="verifyEmailBlock" class="space-y-2 rounded-2xl border border-gray-200 p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold text-ink-strong">Código do e-mail</span>
+            <span id="verifyEmailDone" class="hidden text-xs font-bold text-up">✓ Confirmado</span>
+          </div>
+          <div class="flex gap-2">
+            <input id="verifyEmailCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code"
+              class="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-[0.4em] text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+            <button type="button" id="verifyEmailBtn"
+              class="shrink-0 rounded-xl bg-casa-blue px-4 py-3 text-sm font-bold text-white transition hover:bg-casa-navy">Confirmar</button>
+          </div>
+          <p id="verifyEmailMsg" class="hidden text-sm font-semibold"></p>
+          <button type="button" id="resendEmailBtn" class="text-xs font-semibold text-casa-blue hover:underline disabled:cursor-not-allowed disabled:text-ink-soft">Reenviar código</button>
+        </div>
+
+        <!-- Telefone -->
+        <div id="verifyPhoneBlock" class="space-y-2 rounded-2xl border border-gray-200 p-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-semibold text-ink-strong">Código do SMS</span>
+            <span id="verifyPhoneDone" class="hidden text-xs font-bold text-up">✓ Confirmado</span>
+          </div>
+          <div class="flex gap-2">
+            <input id="verifyPhoneCode" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code"
+              class="min-w-0 flex-1 rounded-xl border border-gray-300 px-4 py-3 text-center font-mono text-lg tracking-[0.4em] text-ink-strong focus:border-casa-blue focus:outline-none focus:ring-4 focus:ring-casa-blue/15" />
+            <button type="button" id="verifyPhoneBtn"
+              class="shrink-0 rounded-xl bg-casa-blue px-4 py-3 text-sm font-bold text-white transition hover:bg-casa-navy">Confirmar</button>
+          </div>
+          <p id="verifyPhoneMsg" class="hidden text-sm font-semibold"></p>
+          <button type="button" id="resendPhoneBtn" class="text-xs font-semibold text-casa-blue hover:underline disabled:cursor-not-allowed disabled:text-ink-soft">Reenviar código</button>
+        </div>
+
+        <button type="button" id="verifySkipBtn"
+          class="w-full rounded-xl border border-gray-300 px-6 py-3 text-sm font-semibold text-ink-soft transition hover:bg-gray-50">
+          Pular por enquanto
+        </button>
+      </section>
+    </div>
+
+    <p class="mt-6 text-center text-xs text-white/60">
+      Auto-custódia exclusiva: os ativos vão direto para a sua wallet. © Casa da Moeda Master Digital
+    </p>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+    const $ = (sel) => document.querySelector(sel);
+
+    // Já logado? Vai direto para o site (ou para a página pedida em ?next=)
+    const nextPage = () => {
+      const n = new URLSearchParams(location.search).get('next') || 'index.html';
+      // só permite destinos internos
+      return /^[\w.-]+\.html(\?.*)?$/.test(n) ? n : 'index.html';
+    };
+    const wantsVerify = new URLSearchParams(location.search).get('verify') === '1';
+    if (CMMDAuth.getSession() && !wantsVerify) { location.replace(nextPage()); return; }
+
+    /* ---------- troca de abas ---------- */
+    function showTab(which) {
+      const login = which === 'login';
+      $('#formLogin').classList.toggle('hidden', !login);
+      $('#formRegister').classList.toggle('hidden', login);
+      $('#tabLogin').className = login
+        ? 'border-b-2 border-casa-blue py-4 font-display text-sm font-bold text-casa-navy'
+        : 'border-b-2 border-transparent py-4 font-display text-sm font-bold text-ink-soft hover:text-casa-navy';
+      $('#tabRegister').className = !login
+        ? 'border-b-2 border-casa-blue py-4 font-display text-sm font-bold text-casa-navy'
+        : 'border-b-2 border-transparent py-4 font-display text-sm font-bold text-ink-soft hover:text-casa-navy';
+      $('#tabLogin').setAttribute('aria-selected', login);
+      $('#tabRegister').setAttribute('aria-selected', !login);
+    }
+    $('#tabLogin').addEventListener('click', () => showTab('login'));
+    $('#tabRegister').addEventListener('click', () => showTab('register'));
+    document.querySelectorAll('[data-switch]').forEach(btn =>
+      btn.addEventListener('click', () => showTab(btn.dataset.switch)));
+
+    /* ---------- erros de campo ---------- */
+    function clearFieldErrors() {
+      document.querySelectorAll('.field-error').forEach(el => { el.classList.add('hidden'); el.textContent = ''; });
+      $('#regError').classList.add('hidden');
+      $('#loginError').classList.add('hidden');
+    }
+    function showFieldError(field, message) {
+      const el = document.querySelector(`.field-error[data-for="${field}"]`);
+      if (el) { el.textContent = message; el.classList.remove('hidden'); }
+      else { $('#regError').textContent = message; $('#regError').classList.remove('hidden'); }
+    }
+
+    /* ---------- colar wallet ---------- */
+    $('#regPaste').addEventListener('click', async () => {
+      try { $('#regWallet').value = (await navigator.clipboard.readText()).trim(); }
+      catch (_) { $('#regWallet').focus(); }
+    });
+
+    /* ---------- máscara simples do telefone BR ---------- */
+    $('#regPhone').addEventListener('input', (e) => {
+      if ($('#regDdi').value !== '55') return;
+      let v = e.target.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 6) v = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+      else if (v.length > 2) v = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+      e.target.value = v;
+    });
+
+    /* ---------- criar conta ---------- */
+    $('#formRegister').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      if ($('#regPass').value !== $('#regPass2').value) {
+        showFieldError('password2', 'As senhas não coincidem.');
+        return;
+      }
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Criando conta…';
+      const result = await CMMDAuth.register({
+        name: $('#regName').value,
+        email: $('#regEmail').value,
+        phoneDdi: $('#regDdi').value,
+        phoneNumber: $('#regPhone').value,
+        wallet: $('#regWallet').value,
+        password: $('#regPass').value,
+      });
+      btn.disabled = false; btn.textContent = 'Criar minha conta';
+      if (!result.ok) { showFieldError(result.field, result.message); return; }
+      showVerifyStep();
+    });
+
+    /* ---------- etapa de confirmação de e-mail / telefone ---------- */
+    function setVerifyMsg(which, ok, text) {
+      const el = $('#verify' + which + 'Msg');
+      el.textContent = text;
+      el.className = 'text-sm font-semibold ' + (ok ? 'text-up' : 'text-down');
+      el.classList.remove('hidden');
+    }
+    function markVerified(which) {
+      $('#verify' + which + 'Done').classList.remove('hidden');
+      $('#verify' + which + 'Code').disabled = true;
+      $('#verify' + which + 'Btn').disabled = true;
+      $('#resend' + which + 'Btn').classList.add('hidden');
+      const user = CMMDAuth.currentUser();
+      if (user && user.emailVerified && user.phoneVerified) {
+        setTimeout(() => location.replace(nextPage()), 800);
+      }
+    }
+    function startCooldown(btn) {
+      let remaining = 60;
+      btn.disabled = true;
+      const original = 'Reenviar código';
+      const timer = setInterval(() => {
+        remaining -= 1;
+        if (remaining <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = original; }
+        else btn.textContent = 'Reenviar em ' + remaining + 's';
+      }, 1000);
+      btn.textContent = 'Reenviar em ' + remaining + 's';
+    }
+    async function sendCodes(onlyEmail, onlyPhone) {
+      const user = CMMDAuth.currentUser();
+      if (!user) return;
+      if (!onlyPhone && !user.emailVerified) {
+        const r = await CMMDAuth.sendEmailConfirmation();
+        if (!r.ok) setVerifyMsg('Email', false, r.message);
+        startCooldown($('#resendEmailBtn'));
+      }
+      if (!onlyEmail && !user.phoneVerified) {
+        const r = await CMMDAuth.sendPhoneConfirmation();
+        if (!r.ok) setVerifyMsg('Phone', false, r.message);
+        startCooldown($('#resendPhoneBtn'));
+      }
+    }
+    function showVerifyStep() {
+      const user = CMMDAuth.currentUser();
+      if (!user) { showTab('login'); return; }
+      if (user.emailVerified && user.phoneVerified) { location.replace(nextPage()); return; }
+      $('#formLogin').classList.add('hidden');
+      $('#formRegister').classList.add('hidden');
+      $('#formVerify').classList.remove('hidden');
+      if (user.emailVerified) { $('#verifyEmailBlock').classList.add('hidden'); }
+      if (user.phoneVerified) { $('#verifyPhoneBlock').classList.add('hidden'); }
+      sendCodes(false, false);
+    }
+    async function confirmCode(which) {
+      const input = $('#verify' + which + 'Code');
+      const code = input.value.replace(/\D/g, '');
+      if (code.length !== 6) { setVerifyMsg(which, false, 'Digite os 6 dígitos do código.'); return; }
+      const btn = $('#verify' + which + 'Btn');
+      btn.disabled = true;
+      const r = which === 'Email' ? await CMMDAuth.confirmEmailCode(code) : await CMMDAuth.confirmPhoneCode(code);
+      btn.disabled = false;
+      if (!r.ok) { setVerifyMsg(which, false, r.message); return; }
+      setVerifyMsg(which, true, 'Confirmado com sucesso!');
+      markVerified(which);
+    }
+    $('#verifyEmailBtn').addEventListener('click', () => confirmCode('Email'));
+    $('#verifyPhoneBtn').addEventListener('click', () => confirmCode('Phone'));
+    $('#resendEmailBtn').addEventListener('click', () => sendCodes(true, false));
+    $('#resendPhoneBtn').addEventListener('click', () => sendCodes(false, true));
+    $('#verifySkipBtn').addEventListener('click', () => location.replace(nextPage()));
+
+    // Chegou com sessão ativa e ?verify=1 (banner do painel): abre direto a etapa de confirmação.
+    if (wantsVerify && CMMDAuth.getSession()) showVerifyStep();
+
+    /* ---------- entrar ---------- */
+    $('#formLogin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearFieldErrors();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Entrando…';
+      const result = await CMMDAuth.login($('#loginEmail').value, $('#loginPass').value);
+      btn.disabled = false; btn.textContent = 'Entrar';
+      if (!result.ok) {
+        $('#loginError').textContent = result.message;
+        $('#loginError').classList.remove('hidden');
+        return;
+      }
+      location.replace(nextPage());
+    });
+  })();
+  </script>
+</body>
+</html>

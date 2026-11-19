@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel de Ativos — Casa da Moeda Master Digital</title>
+
+  <!-- Favicon: mesma marca exibida no cabeçalho -->
+  <link rel="icon" type="image/png" href="./logo-128px-MD.png" />
+  <link rel="apple-touch-icon" href="./logo-128px-MD.png" />
+  <meta name="description" content="Painel com os ativos nativos da Casa da Moeda Master Digital: preço em tempo real, variação 24h e acesso direto à Mesa OTC." />
+
+  <!-- Variáveis públicas geradas do .env (Supabase). Veja scripts/env.mjs -->
+  <script src="./assets/env.js"></script>
+
+  <!-- Autenticação: exige login antes de exibir o painel -->
+  <script src="./assets/auth.js"></script>
+  <script>CMMDAuth.requireAuth();</script>
+
+  <!-- Internacionalização (PT-BR / ES / EN) -->
+  <script src="./assets/i18n.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./assets/app.css" />
+  <style>
+    html { scroll-behavior: smooth; }
+    body { -webkit-font-smoothing: antialiased; }
+
+    /* Mesmo fundo decorativo do hero do site principal */
+    .hero-bg {
+      background:
+        radial-gradient(800px 400px at 85% -10%, rgba(245,196,0,.35), transparent 60%),
+        radial-gradient(600px 300px at -10% 110%, rgba(255,255,255,.12), transparent 60%),
+        linear-gradient(135deg, #082B63 0%, #0B4AA8 100%);
+    }
+
+    .flash-up   { animation: flashUp 700ms ease-out; }
+    .flash-down { animation: flashDown 700ms ease-out; }
+    @keyframes flashUp   { 0% { color: #4ADE80; } 100% { color: inherit; } }
+    @keyframes flashDown { 0% { color: #F87171; } 100% { color: inherit; } }
+
+    /* Seletor de idiomas */
+    .lang-switch { display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(245,196,0,.45); border-radius: 9999px; padding: 2px; background: rgba(255,255,255,.08); }
+    .cmmd-lang-btn { cursor: pointer; border: 0; background: transparent; color: rgba(255,255,255,.75); font: inherit; font-size: 12px; font-weight: 700; line-height: 1; padding: 5px 9px; border-radius: 9999px; transition: background-color .2s, color .2s; }
+    .cmmd-lang-btn:hover { color: #fff; }
+    .cmmd-lang-btn.is-active { background: #F5C400; color: #082B63; }
+  </style>
+</head>
+<body class="hero-bg min-h-screen font-sans text-white">
+
+  <!-- Cabeçalho -->
+  <header class="sticky top-0 z-40 bg-casa-navy/90 shadow-lg backdrop-blur">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+      <a href="index.html" class="flex items-center gap-3" aria-label="Voltar para o início">
+        <img src="./logo-128px-MD.png" width="40" height="40" alt="Mastter Digital" class="h-10 w-10 rounded-full" />
+        <span>
+          <span class="block font-display text-sm font-bold leading-tight text-white sm:text-base">Casa da Moeda <span class="text-casa-gold">Master Digital</span></span>
+          <span class="block text-[11px] text-white/60">Painel de Ativos</span>
+        </span>
+      </a>
+      <nav class="flex items-center gap-4 text-sm font-medium text-white/80" aria-label="Navegação">
+        <div class="lang-switch" data-i18n-skip aria-label="Idioma / Language"></div>
+        <a href="index.html" class="hover:text-casa-gold">Início</a>
+        <a href="contrato.html" class="hover:text-casa-gold">Contrato</a>
+        <a href="index.html#p2p" class="rounded-xl bg-casa-gold px-4 py-2 text-sm font-bold text-casa-navy shadow transition hover:brightness-95">Mesa OTC</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+
+    <span class="inline-flex items-center gap-2 rounded-full border border-casa-gold/50 bg-white/10 px-3 py-1 text-xs font-semibold text-casa-gold">
+      <span class="h-2 w-2 rounded-full bg-up"></span> Preços reais · Solana mainnet
+    </span>
+    <h1 class="mt-4 font-display text-3xl font-extrabold leading-tight sm:text-4xl">Painel de Ativos</h1>
+    <p class="mt-2 max-w-xl text-white/75">Cotação em tempo real dos tokens nativos. Clique em um ativo para negociar na <strong class="text-casa-gold">Mesa OTC</strong>.</p>
+
+    <!-- Painel de referência (mesmo visual do hero do site) -->
+    <div class="mt-8 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur sm:p-6">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="font-display text-lg font-bold">Painel de referência</h2>
+        <span class="text-xs text-white/60"><span id="liveBadge">carregando…</span> · <span id="lastUpdate" data-i18n-skip>—</span></span>
+      </div>
+      <ul id="tickerList" class="divide-y divide-white/10"></ul>
+    </div>
+
+    <p class="mt-8 rounded-2xl border border-casa-gold/40 bg-white/5 p-5 text-sm leading-relaxed text-white/75">
+      Aviso importante: O investimento em ativos digitais oferecidos nesta plataforma não garante lucro. Os ativos listados são estritamente Utility Tokens (tokens de utilidade), não possuindo valor imobiliário, mobiliário ou de garantia financeira. Sua finalidade é exclusivamente educacional, comunitária e de uso interno no ecossistema. A valorização ou flutuação do ativo depende exclusivamente do engajamento e comprimento da comunidade.
+    </p>
+  </main>
+
+  <script>
+  (function () {
+    'use strict';
+
+    const t = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+    const curLang = () => (window.I18N ? window.I18N.lang : 'pt');
+
+    /** Mesmos ativos/mints do site principal (Solana mainnet). */
+    const ASSETS = [
+      { id: 'BDC',  name: 'Bode Coin',       mint: 'AeAQdgjGqtHErysb5FBvUxNxmob2mVBGnEXdmULJ7dH9', icon: 'assets/tokens/bdc.png' },
+      { id: 'VRC',  name: 'Verum Coin',      mint: '42NcQ9VEaWe8WaKFdbDxqLXsJTqPj2gMArAk7c5ZkgxY', icon: 'assets/tokens/vrc.png' },
+      { id: 'ESCT', name: 'Escoteiros Coin', mint: 'Ctauy54NbyabVqGXHuY5wwVEAh29mGhh5KGfif5jppZt', icon: 'assets/tokens/esct.png' },
+    ];
+    const SOLANA_RPC = 'https://api.mainnet-beta.solana.com';
+
+    const $ = (sel, root = document) => root.querySelector(sel);
+    let usdBrl = null;
+
+    function formatUsd(v) {
+      if (v == null) return '—';
+      return 'US$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    }
+    function formatBrl(v) {
+      if (v == null) return '';
+      return '≈ R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+    }
+    function badge(change) {
+      if (change == null) return '<span class="text-xs text-white/50">—</span>';
+      const up = change >= 0;
+      const txt = (up ? '+' : '') + change.toFixed(2).replace('.', ',') + '%';
+      return `<span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${up ? 'bg-up-soft text-up-dark' : 'bg-down-soft text-down-dark'}">
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="${up ? 'M5 1l4 6H1z' : 'M5 9L1 3h8z'}" fill="currentColor"/></svg>${txt}</span>`;
+    }
+    function timeAgo(ts) {
+      const s = Math.max(1, Math.round((Date.now() - ts) / 1000));
+      let n, unit;
+      if (s < 60) { n = s; unit = 's'; }
+      else { const m = Math.round(s / 60); if (m < 60) { n = m; unit = 'min'; }
+        else { const h = Math.round(m / 60); if (h < 24) { n = h; unit = 'h'; } else { n = Math.round(h / 24); unit = 'd'; } } }
+      const lang = curLang();
+      if (lang === 'en') return n + ' ' + unit + ' ago';
+      return (lang === 'es' ? 'hace ' : 'há ') + n + ' ' + unit;
+    }
+
+    async function fetchJson(url, options) {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }
+
+    /** Linhas no mesmo formato do painel do hero, porém clicáveis → Mesa OTC. */
+    function render() {
+      $('#tickerList').innerHTML = ASSETS.map(a => `
+        <li>
+          <a href="index.html?otc=${a.id}#p2p" aria-label="${t('Negociar {asset} na Mesa OTC', { asset: a.name })}"
+            class="group -mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3.5 transition hover:bg-white/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-gold/50">
+            <span class="flex min-w-0 items-center gap-3">
+              <img src="${a.icon}" alt="" class="h-10 w-10 shrink-0 rounded-full object-cover drop-shadow" loading="lazy" />
+              <span class="min-w-0">
+                <span class="block truncate font-semibold text-white">${a.name}</span>
+                <span class="block font-mono text-xs text-white/60">${a.id} · <span data-move="${a.id}" data-i18n-skip>…</span></span>
+              </span>
+            </span>
+            <span class="flex items-center gap-3 text-right">
+              <span>
+                <span class="block font-display font-bold text-white" data-price="${a.id}" data-i18n-skip>—</span>
+                <span class="mt-0.5 block text-[11px] text-white/55" data-brl="${a.id}" data-i18n-skip></span>
+                <span class="mt-1 block" data-change="${a.id}" data-i18n-skip>${badge(null)}</span>
+              </span>
+              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-casa-gold text-casa-navy opacity-80 transition group-hover:opacity-100" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </span>
+            </span>
+          </a>
+        </li>`).join('');
+    }
+
+    async function refreshFx() {
+      if (usdBrl) return;
+      try {
+        const d = await fetchJson('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+        const bid = Number(d.USDBRL && d.USDBRL.bid);
+        if (bid > 0) usdBrl = bid;
+      } catch (_) {
+        try {
+          const d = await fetchJson('https://open.er-api.com/v6/latest/USD');
+          if (d.rates && d.rates.BRL > 0) usdBrl = d.rates.BRL;
+        } catch (_) { /* segue sem conversão BRL */ }
+      }
+    }
+
+    async function refreshPrices() {
+      const mints = ASSETS.map(a => a.mint);
+      const quotes = {};
+      try {
+        const data = await fetchJson('https://lite-api.jup.ag/price/v3?ids=' + mints.join(','));
+        mints.forEach(m => { const q = data[m]; if (q && q.usdPrice > 0) quotes[m] = { usd: q.usdPrice, change: q.priceChange24h }; });
+      } catch (_) { /* tenta DexScreener abaixo */ }
+      const missing = mints.filter(m => !quotes[m]);
+      if (missing.length) {
+        try {
+          const pairs = await fetchJson('https://api.dexscreener.com/tokens/v1/solana/' + missing.join(','));
+          (Array.isArray(pairs) ? pairs : []).forEach(p => {
+            const m = p.baseToken && p.baseToken.address;
+            const v = Number(p.priceUsd);
+            if (!m || missing.indexOf(m) === -1 || !(v > 0)) return;
+            const liq = (p.liquidity && p.liquidity.usd) || 0;
+            if (!quotes[m] || liq > quotes[m].liq) quotes[m] = { usd: v, change: p.priceChange && p.priceChange.h24, liq };
+          });
+        } catch (_) { /* sem cotação agora */ }
+      }
+      refreshFx();
+
+      let any = false;
+      ASSETS.forEach(a => {
+        const q = quotes[a.mint];
+        if (!q) return;
+        any = true;
+        const el = $(`[data-price="${a.id}"]`);
+        const txt = formatUsd(q.usd);
+        if (el && el.textContent !== txt) {
+          el.textContent = txt;
+          el.classList.remove('flash-up', 'flash-down');
+          void el.offsetWidth;
+          el.classList.add((q.change || 0) >= 0 ? 'flash-up' : 'flash-down');
+        }
+        const brlEl = $(`[data-brl="${a.id}"]`);
+        if (brlEl) brlEl.textContent = usdBrl ? formatBrl(q.usd * usdBrl) : '';
+        const chEl = $(`[data-change="${a.id}"]`);
+        if (chEl) chEl.innerHTML = badge(typeof q.change === 'number' ? q.change : null);
+      });
+      if (any) {
+        $('#lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+        $('#liveBadge').textContent = t('ao vivo · Solana');
+        $('#liveBadge').className = 'font-semibold text-casa-gold';
+      }
+    }
+
+    async function refreshMovements() {
+      for (const a of ASSETS) {
+        const el = $(`[data-move="${a.id}"]`);
+        if (!el) continue;
+        try {
+          const data = await fetchJson(SOLANA_RPC, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getSignaturesForAddress', params: [a.mint, { limit: 1 }] }),
+          });
+          const s = (data.result || [])[0];
+          el.textContent = s && s.blockTime ? t('última tx {ago}', { ago: timeAgo(s.blockTime * 1000) }) : t('sem tx recente');
+        } catch (_) {
+          el.textContent = t('on-chain');
+        }
+      }
+    }
+
+    render();
+    refreshPrices();
+    refreshMovements();
+    setInterval(refreshPrices, 10 * 1000);
+    setInterval(refreshMovements, 60 * 1000);
+
+    // Internacionalização: traduz o estático e reage à troca de idioma
+    if (window.I18N) {
+      window.I18N.apply();
+      window.I18N.onChange(() => { render(); refreshPrices(); refreshMovements(); });
+    }
+  })();
+  </script>
+  <script>
+    // Chip do usuário logado ("Sair") no cabeçalho + aviso de verificação pendente
+    function mountAuthWidgets() { CMMDAuth.mountUserChip(); CMMDAuth.mountVerificationBanner(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountAuthWidgets);
+    else mountAuthWidgets();
+  </script>
+</body>
+</html>

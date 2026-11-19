@@ -1,0 +1,13 @@
+{
+  "name": "cmmd-supabase",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Casa da Moeda Master Digital — migrations SQL do Supabase e testes (Postgres embutido simulando o Supabase)",
+  "scripts": {
+    "test": "node tests/plataforma.test.mjs && node tests/parcerias.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.16"
+  }
+}

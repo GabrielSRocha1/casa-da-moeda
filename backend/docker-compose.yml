@@ -1,0 +1,22 @@
+# PostgreSQL local (opcional). Em desenvolvimento a API já funciona sem ele (PGlite).
+# Uso: docker compose up -d
+#      DATABASE_URL=postgres://cmmd:cmmd@localhost:5432/cmmd npm run dev
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cmmd
+      POSTGRES_PASSWORD: cmmd
+      POSTGRES_DB: cmmd
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U cmmd -d cmmd']
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:

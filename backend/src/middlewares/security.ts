@@ -19,7 +19,7 @@ export function corsPolicy(env: Env): RequestHandler {
   return cors({
     origin: allowAll ? true : (origin, cb) => cb(null, !origin || origins.includes(origin)),
     methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Idempotency-Key', 'X-Request-Id', 'X-Webhook-Secret'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Request-Id', 'X-Webhook-Secret'],
     exposedHeaders: ['X-Request-Id', 'RateLimit-Limit', 'RateLimit-Remaining', 'RateLimit-Reset'],
     maxAge: 600,
   });

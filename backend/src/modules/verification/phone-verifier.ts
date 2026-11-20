@@ -47,14 +47,30 @@ export class TwilioPhoneVerifier implements PhoneVerifier {
 function mapTwilioError(err: unknown): Error {
   const e = err as { code?: number; status?: number; message?: string };
   if (e?.code === 60200) return badRequest('PHONE_INVALID', 'Número de telefone inválido para envio de SMS.');
-  if (e?.code === 60202 || e?.status === 429) {
+  if (e?.code === 60202 || e?.code === 60203 || e?.status === 429) {
     return badRequest('TOO_MANY_ATTEMPTS', 'Muitas tentativas de verificação. Aguarde alguns minutos e tente novamente.');
   }
   if (e?.code === 20404) {
     // Verification não encontrada: código já consumido/expirado
     return badRequest('CODE_EXPIRED', 'Código expirado ou já utilizado. Solicite um novo.');
   }
-  return badGateway('SMS_PROVIDER_ERROR', 'Falha ao comunicar com o provedor de SMS. Tente novamente.');
+  // Conta trial da Twilio: só envia para números previamente verificados no console.
+  if (e?.code === 21608) {
+    return badRequest('PHONE_UNVERIFIED_TRIAL', 'Este número não está autorizado na conta Twilio (conta trial só envia para números verificados no console da Twilio).');
+  }
+  // Permissões geográficas: o país de destino não está habilitado para SMS na conta.
+  if (e?.code === 21408 || e?.code === 21215 || e?.code === 60605) {
+    return badRequest('SMS_REGION_BLOCKED', 'O envio de SMS para o país deste número não está habilitado na conta Twilio (Geo Permissions).');
+  }
+  if (e?.code === 20003) {
+    return badGateway('SMS_PROVIDER_AUTH', 'Credenciais da Twilio inválidas no servidor.', { twilioCode: e.code });
+  }
+  // Demais erros: preserva código e mensagem originais para diagnóstico no log/resposta.
+  return badGateway('SMS_PROVIDER_ERROR', 'Falha ao comunicar com o provedor de SMS. Tente novamente.', {
+    twilioCode: e?.code ?? null,
+    twilioStatus: e?.status ?? null,
+    twilioMessage: e?.message ?? null,
+  });
 }
 
 /** Dev sem credenciais Twilio: gera código localmente e o escreve no log. */

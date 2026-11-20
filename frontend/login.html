@@ -153,7 +153,7 @@
       <section id="formVerify" class="hidden space-y-5 px-6 py-6">
         <div>
           <h2 class="font-display text-lg font-bold text-casa-navy">Confirme seus dados</h2>
-          <p class="mt-1 text-sm text-ink-soft">Enviamos códigos de 6 dígitos para o seu e-mail e por SMS para o seu telefone.</p>
+          <p id="verifyIntro" class="mt-1 text-sm text-ink-soft">Enviamos um código de 6 dígitos para o seu e-mail.</p>
         </div>
 
         <!-- E-mail -->
@@ -188,10 +188,6 @@
           <button type="button" id="resendPhoneBtn" class="text-xs font-semibold text-casa-blue hover:underline disabled:cursor-not-allowed disabled:text-ink-soft">Reenviar código</button>
         </div>
 
-        <button type="button" id="verifySkipBtn"
-          class="w-full rounded-xl border border-gray-300 px-6 py-3 text-sm font-semibold text-ink-soft transition hover:bg-gray-50">
-          Pular por enquanto
-        </button>
       </section>
     </div>
 
@@ -208,11 +204,16 @@
     // Já logado? Vai direto para o site (ou para a página pedida em ?next=)
     const nextPage = () => {
       const n = new URLSearchParams(location.search).get('next') || 'index.html';
-      // só permite destinos internos
-      return /^[\w.-]+\.html(\?.*)?$/.test(n) ? n : 'index.html';
+      // só permite destinos internos; nunca a própria login.html (evita loop de redirect)
+      return /^[\w.-]+\.html(\?.*)?$/.test(n) && !/^login\.html/i.test(n) ? n : 'index.html';
     };
     const wantsVerify = new URLSearchParams(location.search).get('verify') === '1';
     if (CMMDAuth.getSession() && !wantsVerify) { location.replace(nextPage()); return; }
+
+    // Verificação por SMS é opcional por padrão (Twilio sem plano): só é exigida se
+    // PHONE_VERIFICATION_REQUIRED='true' no ambiente. Caso contrário, confirma-se só o e-mail.
+    const PHONE_VERIFICATION_REQUIRED = !!(window.CMMD_ENV && String(window.CMMD_ENV.PHONE_VERIFICATION_REQUIRED) === 'true');
+    const phoneSatisfied = (user) => !PHONE_VERIFICATION_REQUIRED || !!(user && user.phoneVerified);
 
     /* ---------- troca de abas ---------- */
     function showTab(which) {
@@ -296,7 +297,7 @@
       $('#verify' + which + 'Btn').disabled = true;
       $('#resend' + which + 'Btn').classList.add('hidden');
       const user = CMMDAuth.currentUser();
-      if (user && user.emailVerified && user.phoneVerified) {
+      if (user && user.emailVerified && phoneSatisfied(user)) {
         setTimeout(() => location.replace(nextPage()), 800);
       }
     }
@@ -319,7 +320,7 @@
         if (!r.ok) setVerifyMsg('Email', false, r.message);
         startCooldown($('#resendEmailBtn'));
       }
-      if (!onlyEmail && !user.phoneVerified) {
+      if (!onlyEmail && PHONE_VERIFICATION_REQUIRED && !user.phoneVerified) {
         const r = await CMMDAuth.sendPhoneConfirmation();
         if (!r.ok) setVerifyMsg('Phone', false, r.message);
         startCooldown($('#resendPhoneBtn'));
@@ -328,12 +329,19 @@
     function showVerifyStep() {
       const user = CMMDAuth.currentUser();
       if (!user) { showTab('login'); return; }
-      if (user.emailVerified && user.phoneVerified) { location.replace(nextPage()); return; }
+      if (user.emailVerified && phoneSatisfied(user)) { location.replace(nextPage()); return; }
       $('#formLogin').classList.add('hidden');
       $('#formRegister').classList.add('hidden');
       $('#formVerify').classList.remove('hidden');
       if (user.emailVerified) { $('#verifyEmailBlock').classList.add('hidden'); }
-      if (user.phoneVerified) { $('#verifyPhoneBlock').classList.add('hidden'); }
+      // Sem verificação de SMS exigida, o bloco de telefone nem aparece.
+      if (user.phoneVerified || !PHONE_VERIFICATION_REQUIRED) { $('#verifyPhoneBlock').classList.add('hidden'); }
+      const intro = $('#verifyIntro');
+      if (intro) {
+        intro.textContent = PHONE_VERIFICATION_REQUIRED
+          ? 'Enviamos códigos de 6 dígitos para o seu e-mail e por SMS para o seu telefone.'
+          : 'Enviamos um código de 6 dígitos para o seu e-mail.';
+      }
       sendCodes(false, false);
     }
     async function confirmCode(which) {
@@ -352,7 +360,6 @@
     $('#verifyPhoneBtn').addEventListener('click', () => confirmCode('Phone'));
     $('#resendEmailBtn').addEventListener('click', () => sendCodes(true, false));
     $('#resendPhoneBtn').addEventListener('click', () => sendCodes(false, true));
-    $('#verifySkipBtn').addEventListener('click', () => location.replace(nextPage()));
 
     // Chegou com sessão ativa e ?verify=1 (banner do painel): abre direto a etapa de confirmação.
     if (wantsVerify && CMMDAuth.getSession()) showVerifyStep();

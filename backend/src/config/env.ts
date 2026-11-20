@@ -32,7 +32,10 @@ const EnvSchema = z
     CORS_ORIGINS: csv('*'),
     WEBHOOK_SECRET: z.string().optional(),
     RATE_LIMIT_ENABLED: bool(true),
-    TRUST_PROXY: bool(false),
+    // Na Vercel toda requisição chega via proxy: sem trust proxy, req.ip é o IP interno
+    // e o rate limit vira um bucket global compartilhado por todos os usuários.
+    // Por isso o valor é forçado para true lá, mesmo se o painel disser false.
+    TRUST_PROXY: bool(false).transform((v) => v || Boolean(process.env.VERCEL)),
 
     P2P_FEE_BPS: z.coerce.number().int().min(0).max(5000).default(150),
     P2P_MIN_FIAT: z.coerce.number().positive().default(20),

@@ -559,8 +559,7 @@ function submit(ev){
     platform_fee:119,
     profit_injector:r.inj||"(carteira conectada)", charge_fee_on_profit:$("feeOnProfit").checked
   };
-  if(r.uri) args.token_uri=r.uri;
-  delete args.token_uri;
+  // token_uri não entra no initialize: ele pertence ao bloco activate_entity_vault abaixo.
   const activate={token_uri:r.uri||"(link permanente gerado ao hospedar a imagem)", image_sha256:LOGO_HASH};
   const permanente={name:args.token_name,symbol:args.token_symbol,image:`(arquivo: ${IMG.logo.name})`};
   const perfil={banner:IMG.banner? `(arquivo: ${IMG.banner.name})` : null, site:r.site||null, telegram:r.tg||null, x:r.tw||null};

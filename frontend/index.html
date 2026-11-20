@@ -742,7 +742,8 @@
     // API_URL === '' significa mesma origem (deploy na Vercel, site e API juntos).
     const API_URL = ((window.CMMD_ENV && typeof window.CMMD_ENV.API_URL === 'string')
       ? window.CMMD_ENV.API_URL
-      : 'http://localhost:3333').replace(/\/+$/, '');
+      // Sem env.js: localhost só em dev; em produção usa a mesma origem.
+      : (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://localhost:3333' : '')).replace(/\/+$/, '');
 
     /** Outras cripto do P2P — cotações de referência simuladas. */
     const OTHER_ASSETS = {
@@ -1492,7 +1493,8 @@
           if (!res.ok) {
             const err = json.error || {};
             // Erros de campo do backend → destaca o campo correspondente
-            const fieldMap = { fiatAmount: 'p2pAmount', userWalletAddress: 'p2pWallet', assetSymbol: 'p2pOther' };
+            // assetSymbol aponta para p2pAmount: o erro do ativo precisa aparecer num campo visível.
+            const fieldMap = { fiatAmount: 'p2pAmount', userWalletAddress: 'p2pWallet', assetSymbol: 'p2pAmount' };
             (Array.isArray(err.details) ? err.details : []).forEach(d => {
               const local = fieldMap[d.field || d.path];
               if (local) setError(local, d.message || err.message);
@@ -2323,7 +2325,8 @@
 
       // Deep link vindo do Painel: index.html?otc=BDC abre a Mesa OTC com o ativo escolhido
       const otcAsset = (new URLSearchParams(location.search).get('otc') || '').toUpperCase();
-      if (otcAsset && (NATIVE_ASSETS.some(a => a.id === otcAsset) || OTHER_ASSETS[otcAsset])) {
+      // Só ativos que existem como <option> no select da Mesa OTC.
+      if (otcAsset && NATIVE_ASSETS.some(a => a.id === otcAsset)) {
         setTimeout(() => P2P.openWithAsset(otcAsset), 300);
       }
 

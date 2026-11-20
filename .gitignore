@@ -8,3 +8,6 @@ __pycache__/
 *.log
 .DS_Store
 frontend/assets/env.js
+
+.vercel
+.env*

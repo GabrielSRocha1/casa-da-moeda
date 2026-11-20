@@ -238,9 +238,15 @@ export class B2BService {
     } catch (err) {
       const e = err as { code?: string; cause?: { code?: string } };
       if (e?.code === '23505' || e?.cause?.code === '23505') {
-        // Reenvio da mesma solicitação: devolve a existente (idempotente).
+        // Reenvio da mesma solicitação: devolve a existente (idempotente) —
+        // mas só se o payload bater, para um id adivinhado não vazar dados de terceiros.
         const [existing] = await this.db.select().from(businessApplications).where(eq(businessApplications.id, id)).limit(1);
-        if (existing) return partnershipToDTO(existing);
+        if (existing) {
+          if (existing.email !== input.email || existing.whatsapp !== input.whatsapp) {
+            throw conflict('IDEMPOTENCY_KEY_REUSED', 'Este id já foi usado com dados diferentes.');
+          }
+          return partnershipToDTO(existing);
+        }
       }
       throw err;
     }

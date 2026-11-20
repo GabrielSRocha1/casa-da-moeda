@@ -40,7 +40,17 @@ export async function createDatabase(url: string, opts: { ssl?: boolean } = {}):
     return {
       db,
       driver: 'postgres',
-      migrate: () => migratePg(drizzlePg(pool), { migrationsFolder: MIGRATIONS_FOLDER }),
+      // Advisory lock: cold starts concorrentes na Vercel não podem aplicar a mesma migration em paralelo.
+      migrate: async () => {
+        const conn = await pool.connect();
+        try {
+          await conn.query('select pg_advisory_lock(727274)');
+          await migratePg(drizzlePg(pool), { migrationsFolder: MIGRATIONS_FOLDER });
+        } finally {
+          await conn.query('select pg_advisory_unlock(727274)').catch(() => {});
+          conn.release();
+        }
+      },
       ping: async () => {
         await pool.query('select 1');
       },

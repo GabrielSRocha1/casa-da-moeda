@@ -6,7 +6,7 @@
   "workspaces": ["frontend", "backend"],
   "scripts": {
     "vercel-build": "npm run build --workspace cmmd-backend && npm run build:css --workspace cmmd-frontend && node frontend/scripts/env.mjs && node scripts/vercel-static.mjs",
-    "setup": "npm --prefix frontend install && npm --prefix backend install && npm --prefix supabase install",
+    "setup": "npm install --include=dev && npm --prefix supabase install",
     "dev:site": "npm --prefix frontend run dev",
     "dev:api": "npm --prefix backend run dev",
     "build:css": "npm --prefix frontend run build:css",

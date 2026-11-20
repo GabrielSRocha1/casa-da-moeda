@@ -16,7 +16,8 @@
     // API_URL === '' significa mesma origem (deploy na Vercel, site e API juntos).
     const base = (window.CMMD_ENV && typeof window.CMMD_ENV.API_URL === 'string')
       ? window.CMMD_ENV.API_URL
-      : 'http://localhost:3333';
+      // Sem env.js: localhost só em dev; em produção usa a mesma origem.
+      : (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://localhost:3333' : '');
     return base.replace(/\/+$/, '') + path;
   }
   async function callApi(path, body, opts) {
@@ -90,7 +91,8 @@
     /** Redireciona para o login se não houver sessão. Usar no topo das páginas internas. */
     requireAuth() {
       if (!this.getSession()) {
-        const next = encodeURIComponent(location.pathname.split('/').pop() + location.search);
+        // Na raiz (/) o pathname não tem arquivo — usa index.html para não perder o ?next.
+        const next = encodeURIComponent((location.pathname.split('/').pop() || 'index.html') + location.search);
         location.replace('login.html?next=' + next);
         return false;
       }
@@ -221,14 +223,17 @@
 
     /** Aviso "confirme seu e-mail/telefone" para quem pulou a etapa no cadastro. */
     mountVerificationBanner() {
+      // SMS só é cobrado quando PHONE_VERIFICATION_REQUIRED='true' no ambiente (Twilio com plano).
+      const phoneRequired = !!(window.CMMD_ENV && String(window.CMMD_ENV.PHONE_VERIFICATION_REQUIRED) === 'true');
       const render = () => {
         const user = this.currentUser();
         const existing = document.getElementById('cmmdVerifyBanner');
-        if (!user || (user.emailVerified && user.phoneVerified)) { if (existing) existing.remove(); return; }
+        const phoneOk = user && (user.phoneVerified || !phoneRequired);
+        if (!user || (user.emailVerified && phoneOk)) { if (existing) existing.remove(); return; }
         if (existing) return;
         const pending = [];
         if (!user.emailVerified) pending.push('e-mail');
-        if (!user.phoneVerified) pending.push('telefone');
+        if (phoneRequired && !user.phoneVerified) pending.push('telefone');
         const banner = document.createElement('div');
         banner.id = 'cmmdVerifyBanner';
         banner.setAttribute('data-i18n-skip', '');

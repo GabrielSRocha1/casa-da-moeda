@@ -9,7 +9,7 @@
     "serve": "node scripts/serve.mjs",
     "build:css": "tailwindcss -c tailwind.config.js -i src/tailwind.css -o assets/app.css --minify",
     "watch:css": "tailwindcss -c tailwind.config.js -i src/tailwind.css -o assets/app.css --watch",
-    "test": "python3 tests/test_site.py && python3 tests/test_parceria.py"
+    "test": "node scripts/run-tests.mjs"
   },
   "devDependencies": {
     "tailwindcss": "3.4.17"

@@ -28,15 +28,28 @@ async function loadEnv() {
 
 const env = await loadEnv();
 // Variáveis do processo (ex.: painel da Vercel) têm prioridade sobre o .env em disco.
-for (const key of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'API_URL']) {
+for (const key of ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'API_URL', 'PHONE_VERIFICATION_REQUIRED']) {
   if (process.env[key] !== undefined) env[key] = process.env[key];
 }
 
 // Lista de permissão: só chaves PÚBLICAS entram no bundle do site.
 // Na Vercel a API é servida na mesma origem (/api), então o default é '' (same-origin).
-const PUBLIC_KEYS = { SUPABASE_URL: '', SUPABASE_ANON_KEY: '', API_URL: process.env.VERCEL ? '' : 'http://localhost:3333' };
+// PHONE_VERIFICATION_REQUIRED='false' por padrão → cadastro conclui só com o e-mail.
+const PUBLIC_KEYS = {
+  SUPABASE_URL: '',
+  SUPABASE_ANON_KEY: '',
+  API_URL: process.env.VERCEL ? '' : 'http://localhost:3333',
+  PHONE_VERIFICATION_REQUIRED: 'false',
+};
 const publicEnv = {};
 for (const key of Object.keys(PUBLIC_KEYS)) publicEnv[key] = env[key] || PUBLIC_KEYS[key];
+
+// Na Vercel, um API_URL apontando para localhost (ex.: .env copiado para o painel)
+// quebraria o site publicado — força same-origin nesse caso.
+if (process.env.VERCEL && /localhost|127\.0\.0\.1/.test(publicEnv.API_URL)) {
+  console.warn('API_URL aponta para localhost em deploy Vercel — ignorando (same-origin).');
+  publicEnv.API_URL = '';
+}
 
 const banner =
   '// ARQUIVO GERADO — não edite: edite o .env na raiz do projeto e rode `npm run dev`.\n' +

@@ -117,7 +117,11 @@
           <a href="#aviso" class="hover:text-casa-gold">Aviso legal</a>
         </nav>
 
-        <div class="lang-switch ml-auto md:ml-0" data-i18n-skip aria-label="Idioma / Language"></div>
+        <div class="ml-auto flex items-center gap-3 md:ml-0">
+          <div class="lang-switch" data-i18n-skip aria-label="Idioma / Language"></div>
+          <!-- Chip do usuário logado (nome + "Sair") é inserido aqui por auth.js -->
+          <div id="cmmdAuthSlot" class="flex items-center" data-i18n-skip></div>
+        </div>
       </div>
 
       <!-- Linha 2: botão de ação, abaixo do menu -->

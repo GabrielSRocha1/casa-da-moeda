@@ -207,17 +207,18 @@
     /** Insere no cabeçalho o nome do usuário e o botão "Sair". */
     mountUserChip() {
       const session = this.getSession();
-      const headerRow = document.querySelector('header > div');
-      if (!session || !headerRow || document.getElementById('cmmdUserChip')) return;
+      // Prefere um slot dedicado (ex.: ao lado do seletor de idioma); senão, cai na 1ª linha do header.
+      const target = document.getElementById('cmmdAuthSlot') || document.querySelector('header > div');
+      if (!session || !target || document.getElementById('cmmdUserChip')) return;
       const chip = document.createElement('div');
       chip.id = 'cmmdUserChip';
       chip.setAttribute('data-i18n-skip', '');
       chip.className = 'flex items-center gap-2';
       const firstName = (session.name || '').split(' ')[0] || session.email;
       chip.innerHTML =
-        '<span class="hidden max-w-[120px] truncate text-xs font-semibold text-white/80 lg:block" title="' + session.email + '">' + firstName + '</span>' +
+        '<span class="hidden max-w-[120px] truncate text-xs font-semibold text-white/80 sm:inline-block" title="' + session.email + '">' + firstName + '</span>' +
         '<button type="button" id="cmmdLogoutBtn" class="rounded-xl border border-white/25 bg-white/10 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/20">Sair</button>';
-      headerRow.appendChild(chip);
+      target.appendChild(chip);
       chip.querySelector('#cmmdLogoutBtn').addEventListener('click', () => CMMDAuth.logout());
     },
 

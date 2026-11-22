@@ -95,35 +95,38 @@
   <!-- CABEÇALHO                                              -->
   <!-- ===================================================== -->
   <header class="sticky top-0 z-40 border-b border-casa-gold/40 bg-casa-navy/95 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-      <a href="#inicio" class="flex items-center gap-3" aria-label="Casa da Moeda Master Digital — início">
-        <!-- Marca Mastter Digital -->
-        <img src="./logo-128px-MD.png" width="40" height="40" alt="Mastter Digital" class="h-10 w-10 rounded-full" />
-        <span class="leading-tight">
-          <span class="block font-display text-base font-bold text-white sm:text-lg">Casa da Moeda</span>
-          <span class="block text-[11px] font-semibold uppercase tracking-[0.2em] text-casa-gold">Master Digital</span>
-        </span>
-      </a>
+    <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6">
+      <!-- Linha 1: marca + menu + idioma -->
+      <div class="flex items-center justify-between gap-4">
+        <a href="#inicio" class="flex items-center gap-3" aria-label="Casa da Moeda Master Digital — início">
+          <!-- Marca Mastter Digital -->
+          <img src="./logo-128px-MD.png" width="40" height="40" alt="Mastter Digital" class="h-10 w-10 rounded-full" />
+          <span class="leading-tight">
+            <span class="block font-display text-base font-bold text-white sm:text-lg">Casa da Moeda</span>
+            <span class="block text-[11px] font-semibold uppercase tracking-[0.2em] text-casa-gold">Master Digital</span>
+          </span>
+        </a>
 
-      <nav class="hidden items-center gap-6 text-sm font-medium text-white/80 md:flex" aria-label="Navegação principal">
-        <a href="painel.html" class="font-semibold text-casa-gold hover:text-white">Painel</a>
-        <a href="#ativos" class="hover:text-casa-gold">Ativos nativos</a>
-        <a href="#p2p" class="hover:text-casa-gold">Mesa OTC</a>
-        <a href="#b2b" class="hover:text-casa-gold">Para negócios</a>
-        <a href="contrato.html" class="hover:text-casa-gold">Contrato</a>
-        <a href="#aviso" class="hover:text-casa-gold">Aviso legal</a>
-      </nav>
+        <nav class="hidden items-center gap-6 text-sm font-medium text-white/80 md:flex" aria-label="Navegação principal">
+          <a href="painel.html" class="font-semibold text-casa-gold hover:text-white">Painel</a>
+          <a href="#ativos" class="hover:text-casa-gold">Ativos nativos</a>
+          <a href="#p2p" class="hover:text-casa-gold">Mesa OTC</a>
+          <a href="#b2b" class="hover:text-casa-gold">Para negócios</a>
+          <a href="contrato.html" class="hover:text-casa-gold">Contrato</a>
+          <a href="termos.html" class="hover:text-casa-gold">Termos</a>
+          <a href="#aviso" class="hover:text-casa-gold">Aviso legal</a>
+        </nav>
 
-      <div class="lang-switch ml-auto md:ml-0" data-i18n-skip aria-label="Idioma / Language"></div>
+        <div class="lang-switch ml-auto md:ml-0" data-i18n-skip aria-label="Idioma / Language"></div>
+      </div>
 
-      <button type="button" data-open-b2b
-        class="hidden rounded-xl bg-casa-gold px-4 py-2.5 text-sm font-bold text-casa-navy shadow transition hover:brightness-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-gold/50 sm:inline-flex">
-        Crie o Utility Token do seu Negócio
-      </button>
-      <button type="button" data-open-b2b
-        class="inline-flex rounded-xl bg-casa-gold px-3 py-2 text-xs font-bold text-casa-navy sm:hidden">
-        Criar token
-      </button>
+      <!-- Linha 2: botão de ação, abaixo do menu -->
+      <div class="flex justify-center border-t border-white/10 pt-3">
+        <button type="button" data-open-b2b
+          class="inline-flex rounded-xl bg-casa-gold px-5 py-2.5 text-sm font-bold text-casa-navy shadow transition hover:brightness-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-casa-gold/50">
+          Crie o Utility Token do seu Negócio
+        </button>
+      </div>
     </div>
   </header>
 
@@ -348,6 +351,11 @@
         </div>
         <p class="text-sm">© <span id="year"></span> Casa da Moeda Master Digital</p>
       </div>
+      <nav class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium" aria-label="Links legais">
+        <a href="termos.html" class="hover:text-casa-gold">Termos de Serviço</a>
+        <a href="privacidade.html" class="hover:text-casa-gold">Política de Privacidade</a>
+        <a href="contrato.html" class="hover:text-casa-gold">Contrato</a>
+      </nav>
       <div class="mt-8 rounded-2xl border border-casa-gold/40 bg-white/5 p-5 text-sm leading-relaxed">
         <p class="disclaimer-text"></p>
       </div>

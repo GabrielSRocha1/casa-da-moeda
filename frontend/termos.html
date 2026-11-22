@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Termos de Serviço · Casa da Moeda Master Digital</title>
+<meta name="description" content="Termos de Serviço, Política de Tokens Aceitáveis e Política de Lançamento da Casa da Moeda Master Digital." />
+<link rel="icon" type="image/png" href="./logo-128px-MD.png" />
+<link rel="apple-touch-icon" href="./logo-128px-MD.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#082B63; --navy-deep:#061f49; --blue:#0B4AA8; --sky:#E8F0FC;
+    --gold:#F5C400; --sun:#FFF6CC; --white:#FFFFFF;
+    --ink:#4B5563; --ink-soft:#6B7280; --line:rgba(255,255,255,.14);
+    --display:"Sora","Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--navy);color:rgba(255,255,255,.85);font:400 16px/1.65 var(--body);-webkit-text-size-adjust:100%}
+  a{color:var(--gold);text-decoration:none}
+  a:hover{text-decoration:underline}
+  h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.01em;color:#fff;line-height:1.2}
+
+  header.site{position:sticky;top:0;z-index:40;background:rgba(8,43,99,.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(245,196,0,.4)}
+  header.site .wrap{max-width:1120px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{width:40px;height:40px;border-radius:50%}
+  .brand b{display:block;font:700 16px var(--display);color:#fff}
+  .brand span{display:block;font:600 11px var(--display);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+  header.site nav{display:flex;gap:20px;font-size:14px;font-weight:600}
+  header.site nav a{color:rgba(255,255,255,.8)}
+  header.site nav a:hover{color:var(--gold);text-decoration:none}
+
+  main{max-width:820px;margin:0 auto;padding:40px 20px 80px}
+  .hero{border:1px solid rgba(245,196,0,.4);background:rgba(255,255,255,.05);border-radius:20px;padding:28px 26px;margin-bottom:36px}
+  .hero .tag{display:inline-block;font:600 12px var(--display);color:var(--gold);border:1px solid rgba(245,196,0,.5);background:rgba(255,255,255,.08);border-radius:99px;padding:5px 12px;margin-bottom:14px}
+  .hero h1{font-size:30px;font-weight:800}
+  .hero .meta{margin-top:12px;font-size:13.5px;color:rgba(255,255,255,.7);line-height:1.6}
+  .hero .meta b{color:#fff;font-weight:600}
+  .warn{margin-top:16px;border-left:3px solid var(--gold);background:rgba(245,196,0,.08);border-radius:0 12px 12px 0;padding:12px 16px;font-size:14px;color:rgba(255,255,255,.88)}
+
+  section{margin:34px 0;scroll-margin-top:80px}
+  section > h2{font-size:21px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  section h3{font-size:16.5px;font-weight:700;color:#fff;margin:22px 0 8px}
+  p{margin:0 0 14px}
+  ul{margin:0 0 14px;padding-left:22px}
+  li{margin:6px 0}
+  dl{margin:0 0 14px}
+  dt{font-weight:700;color:#fff;margin-top:12px}
+  dd{margin:4px 0 0}
+
+  .toc{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:16px;padding:20px 24px;margin-bottom:36px}
+  .toc h2{font-size:15px;font-weight:700;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.08em}
+  .toc ol{columns:2;column-gap:32px;margin:0;padding-left:20px;font-size:14px}
+  .toc li{margin:5px 0}
+  @media(max-width:560px){.toc ol{columns:1}}
+
+  .callout{border:1px solid rgba(245,196,0,.45);background:rgba(245,196,0,.08);border-radius:14px;padding:18px 20px;margin:18px 0}
+  .callout h3{margin-top:0;color:var(--gold)}
+
+  footer.site{border-top:1px solid var(--line);margin-top:48px}
+  footer.site .wrap{max-width:820px;margin:0 auto;padding:28px 20px;font-size:14px;color:rgba(255,255,255,.65)}
+  footer.site .links{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:10px}
+  footer.site .links a{font-weight:600}
+
+  @media(max-width:560px){
+    header.site nav{gap:14px;font-size:13px}
+    .hero h1{font-size:24px}
+    main{padding:28px 16px 64px}
+  }
+</style>
+</head>
+<body>
+  <header class="site">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="Casa da Moeda Master Digital — início">
+        <img src="./logo-128px-MD.png" width="40" height="40" alt="Mastter Digital" />
+        <span><b>Casa da Moeda</b><span>Master Digital</span></span>
+      </a>
+      <nav aria-label="Navegação">
+        <a href="index.html">Início</a>
+        <a href="privacidade.html">Privacidade</a>
+        <a href="contrato.html">Contrato</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <span class="tag">Documento legal</span>
+      <h1>Termos de Serviço, Política de Tokens e Política de Lançamento</h1>
+      <p class="meta">
+        <b>Versão:</b> 1.0 &middot; <b>Data:</b> 15 de novembro de 2026<br />
+        <b>Contato:</b> via e-mail <a href="mailto:suport@mastter.digital">suport@mastter.digital</a>
+      </p>
+      <div class="warn">
+        <b>Status:</b> documento preliminar; não substitui auditoria de código ou autorização regulatória.
+      </div>
+    </div>
+
+    <nav class="toc" aria-label="Índice">
+      <h2>Índice</h2>
+      <ol>
+        <li><a href="#s1">Identificação e escopo</a></li>
+        <li><a href="#s2">Definições</a></li>
+        <li><a href="#s3">Natureza dos serviços</a></li>
+        <li><a href="#s4">Regras do token padrão</a></li>
+        <li><a href="#s5">Finalidade permitida e restrições</a></li>
+        <li><a href="#s6">Liquidez e ausência de garantia</a></li>
+        <li><a href="#s7">Responsabilidades da Empresa Cliente</a></li>
+        <li><a href="#s8">Responsabilidades e limites da Plataforma</a></li>
+        <li><a href="#s9">Tokens que possam ser valores mobiliários</a></li>
+        <li><a href="#s10">KYC, PLD e sanções</a></li>
+        <li><a href="#s11">Segurança, auditoria e transparência</a></li>
+        <li><a href="#s12">Propriedade intelectual</a></li>
+        <li><a href="#s13">Proteção de dados</a></li>
+        <li><a href="#s14">Suspensão e encerramento</a></li>
+        <li><a href="#s15">Riscos e ausência de garantia</a></li>
+        <li><a href="#s16">Disposições gerais</a></li>
+        <li><a href="#tokens">Política de Tokens Aceitáveis</a></li>
+        <li><a href="#aviso">Aviso curto obrigatório</a></li>
+        <li><a href="#checklist">Checklist de aprovação</a></li>
+        <li><a href="#anexo">Anexo — Conformidade internacional</a></li>
+      </ol>
+    </nav>
+
+    <section id="s1">
+      <h2>1. Identificação e escopo</h2>
+      <p>Estes Termos regulam o acesso e o uso dos serviços da Casa da Moeda Master Digital (“Plataforma”), destinados a empresas, projetos e organizações que desejem estruturar, documentar, emitir e administrar tokens digitais. A Plataforma poderá fornecer infraestrutura tecnológica, configuração de contratos inteligentes, apoio operacional, documentação, orientação de distribuição, planejamento de liquidez e assessoria para lançamento.</p>
+      <p>Salvo contrato escrito em sentido contrário, a Plataforma não é a emissora do token, não é custodiante dos ativos dos usuários, não atua como corretora, <em>exchange</em>, administradora de mercado ou intermediária de valores mobiliários.</p>
+      <p>A Empresa Cliente é a pessoa jurídica ou organização que solicita o lançamento e responde pela finalidade econômica do token, pelas informações divulgadas, pelo cumprimento das leis aplicáveis e pela relação com seus usuários, compradores ou beneficiários.</p>
+    </section>
+
+    <section id="s2">
+      <h2>2. Definições</h2>
+      <p>Para estes Termos:</p>
+      <dl>
+        <dt>Token</dt>
+        <dd>ativo digital criado ou administrado por meio de tecnologia de registro distribuído, contrato inteligente ou infraestrutura equivalente.</dd>
+        <dt>Token de utilidade</dt>
+        <dd>token destinado exclusivamente a conceder acesso, desconto, voucher, crédito de consumo, benefício de fidelidade ou uso de produtos e serviços claramente identificados. A nomenclatura não impede eventual enquadramento jurídico diferente se a estrutura econômica tiver características de investimento.</dd>
+        <dt>Emissão</dt>
+        <dd>criação e distribuição das unidades do token conforme o plano aprovado.</dd>
+        <dt>Cunhagem ou <em>mint</em></dt>
+        <dd>função técnica que cria novas unidades do token.</dd>
+        <dt>Mint revogado</dt>
+        <dd>desativação permanente da função de criar novas unidades depois da emissão autorizada, desde que isso seja confirmado no contrato inteligente e em auditoria independente.</dd>
+        <dt>Congelamento ou <em>freeze</em></dt>
+        <dd>função que restringe, bloqueia ou impede transferências ou movimentações. Quando a função for revogada, isso significa apenas que a função técnica foi desabilitada; não representa garantia de preço, liquidez, segurança ou valorização.</dd>
+        <dt>Liquidez</dt>
+        <dd>possibilidade de comprar ou vender o token sem impacto desproporcional no preço. A Plataforma não garante liquidez, volume, listagem, preço ou existência de mercado secundário.</dd>
+        <dt>Oferta</dt>
+        <dd>comunicação, venda, distribuição, colocação ou disponibilização de tokens ao público ou a grupo determinado.</dd>
+        <dt>Valor mobiliário</dt>
+        <dd>instrumento que possa receber esse enquadramento pela legislação e pela autoridade competente, independentemente de ser chamado de token de utilidade.</dd>
+      </dl>
+    </section>
+
+    <section id="s3">
+      <h2>3. Natureza dos serviços</h2>
+      <p>A Plataforma presta serviços de tecnologia e assessoria operacional. Seu trabalho poderá abranger:</p>
+      <ul>
+        <li>desenho da finalidade e dos limites de uso do token;</li>
+        <li>preparação de parâmetros de emissão e distribuição;</li>
+        <li>configuração ou implantação de contrato inteligente;</li>
+        <li>registro público de informações técnicas, quando aplicável;</li>
+        <li>orientação sobre liquidez e riscos de concentração;</li>
+        <li>preparação de materiais informativos e avisos de risco;</li>
+        <li>apoio documental para o lançamento; e</li>
+        <li>coordenação com advogados, auditores, custodiante, provedor de KYC/AML, corretora, <em>exchange</em> ou outro prestador autorizado, quando necessário.</li>
+      </ul>
+      <p>A assessoria não constitui garantia de aprovação regulatória, listagem em <em>exchange</em>, captação de recursos, sucesso comercial, aumento de preço ou retorno financeiro.</p>
+      <p>A Plataforma poderá recusar, suspender ou encerrar qualquer projeto que não forneça informações suficientes, apresente risco regulatório elevado, promova promessa de rentabilidade, envolva fraude, lavagem de dinheiro, sanções, atividade ilícita ou uso incompatível com estes Termos.</p>
+    </section>
+
+    <section id="s4">
+      <h2>4. Regras do token padrão da Casa da Moeda Master Digital</h2>
+      <p>Quando o projeto optar pelo modelo padrão descrito nesta seção, deverão ser observados cumulativamente os seguintes parâmetros, que também deverão constar do contrato inteligente e do documento específico do token:</p>
+
+      <h3>4.1 Oferta máxima</h3>
+      <p>A quantidade máxima total será de <b>25.000.000 (vinte e cinco milhões) de tokens</b>, sem emissão adicional acima desse limite. O número de casas decimais, a unidade mínima, os endereços de distribuição e o cronograma deverão ser publicados antes do lançamento. A existência de 25 milhões de unidades não representa valor econômico mínimo, preço mínimo ou garantia de demanda.</p>
+
+      <h3>4.2 Cunhagem inicial e revogação do mint</h3>
+      <p>A quantidade inicial será definida no plano de emissão aprovado pela Empresa Cliente e não poderá exceder o limite máximo de 25 milhões de tokens. Após a cunhagem inicial, a função de criação de novas unidades deverá ser revogada ou desabilitada de forma permanente, se tecnicamente possível. A revogação deverá ser comprovada por transação ou evidência verificável na rede e, quando aplicável, por auditoria técnica independente.</p>
+      <p>A Plataforma não deverá divulgar “mint revogado” sem verificar o endereço do contrato, a rede, o administrador, as funções proxy, os privilégios de atualização e qualquer mecanismo que possa criar unidades por outra rota.</p>
+
+      <h3>4.3 Função de congelamento</h3>
+      <p>O projeto deverá declarar expressamente se a função de congelamento foi mantida, desabilitada ou revogada. Se a função de congelamento for revogada, a declaração deverá ser limitada ao fato técnico comprovado. Não se deve afirmar que a revogação elimina todos os riscos de bloqueio, ataque, erro de contrato, intervenção de terceiros ou restrição de acesso na infraestrutura utilizada.</p>
+
+      <h3>4.4 Limite de concentração de 30%</h3>
+      <p>O projeto poderá adotar regra de concentração segundo a qual nenhuma carteira ou entidade controlada pela mesma pessoa ou grupo deverá deter mais de <b>30% da oferta relevante</b>, conforme definição expressa no documento do token. A regra deverá esclarecer se o limite incide sobre:</p>
+      <ul>
+        <li>a oferta total de 25 milhões; ou</li>
+        <li>a oferta circulante; ou</li>
+        <li>a quantidade distribuída em determinado evento.</li>
+      </ul>
+      <p>A aplicação técnica deverá considerar carteiras vinculadas, contratos de custódia, carteiras de tesouraria e controle comum. A regra não impede que uma pessoa use várias carteiras para contornar o limite, salvo se houver mecanismo de identificação e monitoramento. Portanto, o limite não é garantia absoluta contra baleias, manipulação, concentração econômica ou volatilidade.</p>
+      <p>O limite de 30% também não deve ser apresentado como mecanismo que “impede o token de escalar”. Ele pode reduzir concentração inicial, mas também pode afetar a formação de mercado, a liquidez e a eficiência de distribuição.</p>
+    </section>
+
+    <section id="s5">
+      <h2>5. Finalidade permitida e restrições de uso</h2>
+      <p>O token deverá ter finalidade declarada, verificável e compatível com produtos ou serviços da Empresa Cliente. Exemplos admissíveis, sujeitos à análise do caso concreto, incluem vouchers, descontos, benefícios de fidelidade, créditos de consumo, acesso a funcionalidades e resgate por produtos ou serviços.</p>
+      <p>É proibido apresentar o token como:</p>
+      <ul>
+        <li>investimento, aplicação financeira ou reserva de valor;</li>
+        <li>oportunidade de lucro, renda, juros, dividendos ou valorização garantida;</li>
+        <li>participação societária, ação, quota, debênture ou título de dívida;</li>
+        <li>direito a recebíveis, fluxo de caixa, amortização ou remuneração vinculada ao desempenho de terceiro;</li>
+        <li>moeda oficial, stablecoin ou ativo com paridade garantida;</li>
+        <li>instrumento destinado a captar recursos com promessa de retorno;</li>
+        <li>mecanismo para ocultar beneficiários, movimentar recursos ilícitos ou burlar controles legais.</li>
+      </ul>
+      <p>Nenhuma publicação, vídeo, postagem, página de venda, <em>whitepaper</em>, material de influenciador ou comunicação comercial poderá contradizer estas restrições.</p>
+    </section>
+
+    <section id="s6">
+      <h2>6. Liquidez, cunhagem e ausência de garantia econômica</h2>
+      <p>A Plataforma poderá prestar apoio para estruturar liquidez, inclusive mediante orientação sobre pares, cronograma, alocação, risco de concentração e procedimentos operacionais. Isso não significa que a Plataforma:</p>
+      <ul>
+        <li>garante compradores ou vendedores;</li>
+        <li>garante preço, volume, spread, estabilidade ou valorização;</li>
+        <li>garante listagem em <em>exchange</em>;</li>
+        <li>garante que o token poderá ser convertido em moeda fiduciária;</li>
+        <li>garante retorno, lucro ou recuperação do valor pago; ou</li>
+        <li>assumirá perdas decorrentes do mercado ou da atuação de terceiros.</li>
+      </ul>
+      <p>Qualquer provisão de liquidez deverá ser documentada separadamente, com identificação de origem dos recursos, responsável pela operação, regras de retirada, riscos de <em>impermanent loss</em>, riscos de contrato inteligente e eventuais restrições regulatórias.</p>
+      <p>A Plataforma não poderá usar a expressão “injeção de liquidez” como sinônimo de garantia de preço. Liquidez é uma condição operacional temporária e pode desaparecer.</p>
+    </section>
+
+    <section id="s7">
+      <h2>7. Responsabilidades da Empresa Cliente</h2>
+      <p>A Empresa Cliente declara e se compromete a:</p>
+      <ul>
+        <li>fornecer dados verdadeiros, completos e atualizados;</li>
+        <li>comprovar sua constituição, representação, beneficiários finais e origem dos recursos;</li>
+        <li>definir e comprovar a utilidade real do token;</li>
+        <li>obter licenças, registros, autorizações ou dispensas necessárias;</li>
+        <li>contratar assessoria jurídica independente para classificar o token;</li>
+        <li>revisar e aprovar o <em>whitepaper</em>, os materiais de marketing e os avisos de risco;</li>
+        <li>não fazer promessa de rendimento ou valorização;</li>
+        <li>implementar KYC/AML quando aplicável;</li>
+        <li>manter registros de distribuição, resgate, reclamações e incidentes;</li>
+        <li>informar alterações no contrato inteligente, na governança, na tesouraria ou na finalidade do token; e</li>
+        <li>indenizar a Plataforma por reclamações resultantes de informações falsas, oferta irregular, publicidade enganosa, violação de direitos de terceiros ou descumprimento legal atribuível à Empresa Cliente.</li>
+      </ul>
+    </section>
+
+    <section id="s8">
+      <h2>8. Responsabilidades e limites da Plataforma</h2>
+      <p>A Plataforma deverá agir com diligência compatível com o escopo contratado e informar limitações técnicas conhecidas. Porém, não controla a blockchain, carteiras de terceiros, <em>exchanges</em>, provedores de RPC, oráculos, aplicativos de carteira, ataques, congestionamentos, forks ou alterações regulatórias.</p>
+      <p>Salvo disposição expressa em contrato específico, a Plataforma não presta aconselhamento financeiro, recomendação de investimento, consultoria jurídica, auditoria contábil, custódia de ativos, intermediação de valores mobiliários ou gestão de carteira.</p>
+      <p>A Plataforma poderá bloquear o acesso a sua infraestrutura, suspender uma campanha, retirar materiais de divulgação ou interromper um lançamento quando identificar risco de ilegalidade, fraude, violação de sanções, falha crítica de segurança ou informação potencialmente enganosa.</p>
+    </section>
+
+    <section id="s9">
+      <h2>9. Tokens que possam ser valores mobiliários</h2>
+      <p>A Empresa Cliente reconhece que a classificação jurídica depende da substância econômica e do modo de oferta. O simples uso da expressão “utility token”, a revogação do <em>mint</em>, a ausência de promessa escrita de lucro ou a limitação da quantidade não impedem, por si só, o enquadramento como valor mobiliário.</p>
+      <p>Se a análise indicar possibilidade de contrato de investimento coletivo, token de recebíveis, token de renda fixa, representação digital de valor mobiliário tradicional, instrumento de dívida, direito a fluxo de caixa ou outra estrutura regulada, o lançamento deverá ser:</p>
+      <ul>
+        <li>suspenso até conclusão da análise jurídica;</li>
+        <li>submetido à estrutura regulatória adequada;</li>
+        <li>realizado somente com os registros, dispensas, intermediários, custodiante, escrituração, divulgação e controles exigidos; e</li>
+        <li>divulgado com linguagem clara, completa e não enganosa.</li>
+      </ul>
+      <p>A Casa da Moeda Master Digital poderá prestar assessoria técnica e operacional para organizar o projeto e coordenar prestadores especializados, mas não promete que a estrutura será aprovada pela Comissão de Valores Mobiliários, Banco Central do Brasil ou qualquer outra autoridade. A Plataforma não poderá ofertar, distribuir ou intermediar valores mobiliários sem estar autorizada ou sem utilizar prestadores autorizados, conforme o caso.</p>
+      <p>A assessoria para lançamento de tokens que possam ser valores mobiliários é condicionada à contratação de advogado e demais participantes regulados necessários. Nenhum material de divulgação deverá afirmar que a ausência de registro equivale a autorização.</p>
+    </section>
+
+    <section id="s10">
+      <h2>10. KYC, prevenção à lavagem de dinheiro e sanções</h2>
+      <p>A Plataforma e a Empresa Cliente poderão exigir identificação, comprovação de origem de recursos, identificação de beneficiário final, análise de risco, prova de residência e outras informações necessárias ao cumprimento de regras de KYC, prevenção à lavagem de dinheiro e sanções econômicas.</p>
+      <p>A Plataforma poderá recusar cadastro, bloquear operações, preservar registros e comunicar fatos às autoridades competentes quando houver obrigação legal ou indícios razoáveis de irregularidade. O usuário não terá direito a exigir a continuidade de uma operação que dependa de verificação ainda não concluída.</p>
+    </section>
+
+    <section id="s11">
+      <h2>11. Segurança, auditoria e transparência técnica</h2>
+      <p>Antes do lançamento, o projeto deverá documentar o endereço do contrato, rede, versão, permissões administrativas, funções de <em>mint</em>, <em>freeze</em>, pause, blacklist, upgrade, taxas, limites, oráculos e carteiras controladoras.</p>
+      <p>A auditoria de contrato inteligente reduz riscos, mas não elimina vulnerabilidades. A auditoria não constitui certificação de rentabilidade, legalidade, segurança absoluta ou qualidade comercial.</p>
+      <p>O projeto deverá publicar, de modo acessível:</p>
+      <ul>
+        <li>finalidade e utilidade do token;</li>
+        <li>oferta máxima e quantidade inicial;</li>
+        <li>cronograma de distribuição;</li>
+        <li>carteiras de tesouraria e equipe, quando aplicável;</li>
+        <li>regras de concentração;</li>
+        <li>riscos técnicos e de mercado;</li>
+        <li>regras de resgate e validade;</li>
+        <li>existência ou inexistência de mercado secundário; e</li>
+        <li>identificação da Empresa Cliente e dos prestadores relevantes.</li>
+      </ul>
+    </section>
+
+    <section id="s12">
+      <h2>12. Propriedade intelectual e materiais de divulgação</h2>
+      <p>A Empresa Cliente concede à Plataforma autorização limitada para usar sua marca, informações e materiais apenas para executar o escopo contratado. A Empresa Cliente é responsável por possuir direitos sobre nomes, imagens, textos, marcas, código e conteúdo fornecido.</p>
+      <p>Nenhuma parte poderá editar ou recortar materiais de modo a criar promessa de lucro, falsa garantia de liquidez, falsa aprovação regulatória ou informação incompatível com estes Termos.</p>
+    </section>
+
+    <section id="s13">
+      <h2>13. Proteção de dados</h2>
+      <p>Cada parte deverá tratar dados pessoais de acordo com a legislação aplicável, incluindo a Lei Geral de Proteção de Dados Pessoais quando aplicável. O projeto deverá definir os papéis de controlador e operador, as finalidades, bases legais, retenção, segurança, atendimento de titulares e compartilhamento com prestadores KYC/AML.</p>
+      <p>A <a href="privacidade.html">política de privacidade</a> é publicada separadamente e não será substituída por estes Termos.</p>
+    </section>
+
+    <section id="s14">
+      <h2>14. Suspensão e encerramento</h2>
+      <p>A Plataforma poderá suspender ou encerrar o serviço, com ou sem aviso prévio quando necessário, para cumprir lei, ordem de autoridade, medida de segurança ou prevenção de dano. Também poderá agir em caso de:</p>
+      <ul>
+        <li>uso ilegal ou fraudulento;</li>
+        <li>promessa de rentabilidade;</li>
+        <li>tentativa de burlar o limite de concentração;</li>
+        <li>alteração não autorizada do contrato;</li>
+        <li>informações falsas ou incompletas;</li>
+        <li>falha crítica de segurança;</li>
+        <li>inadimplemento contratual; ou</li>
+        <li>risco de que o token esteja sendo oferecido irregularmente ao público.</li>
+      </ul>
+      <p>O encerramento não garante o resgate do token nem reverte operações já realizadas na blockchain.</p>
+    </section>
+
+    <section id="s15">
+      <h2>15. Riscos e ausência de garantia</h2>
+      <p>O usuário reconhece que tokens podem perder todo o valor, não possuir liquidez, sofrer volatilidade extrema, ser afetados por falhas de código, ataques, perda de chaves, congestionamento de rede, mudanças legais, decisões de <em>exchanges</em>, fraude de terceiros e erros operacionais.</p>
+      <p>O usuário não deverá comprometer recursos cuja perda não possa suportar. Nenhuma informação fornecida pela Plataforma constitui recomendação de compra, venda ou manutenção de token.</p>
+    </section>
+
+    <section id="s16">
+      <h2>16. Disposições gerais</h2>
+      <p>Estes Termos deverão ser complementados por contrato comercial, política de privacidade, política de tokens aceitáveis, documento técnico do token, plano de distribuição, matriz de responsabilidades e avisos de risco.</p>
+      <p>A lei aplicável, o foro, as taxas, os níveis de serviço, o limite de responsabilidade, os procedimentos de incidente e o canal de reclamação deverão ser preenchidos de acordo com a jurisdição e o contrato efetivamente adotados.</p>
+      <p>Se qualquer disposição for considerada inválida, as demais permanecerão em vigor na máxima extensão permitida. A tolerância a uma infração não constitui renúncia a direitos futuros.</p>
+    </section>
+
+    <section id="tokens">
+      <h2>Política de Tokens Aceitáveis</h2>
+      <p>A Casa da Moeda Master Digital aceitará somente projetos que apresentem finalidade lícita e verificável, emissora identificada, regras de distribuição, documentação de riscos, plano de resgate ou uso, validade quando aplicável e responsável técnico pelo contrato inteligente.</p>
+      <p>Serão recusados tokens que prometam retorno financeiro, representem ações ou dívida sem estrutura regulatória, confiram direito a recebíveis ou juros, funcionem como stablecoin sem avaliação específica, dependam de lavagem de dinheiro, fraude, pirâmide, marketing enganoso ou exploração de pessoa vulnerável.</p>
+      <p>O fato de um token ser aceito para avaliação técnica não significa aprovação jurídica, recomendação comercial ou autorização de oferta pública.</p>
+    </section>
+
+    <section id="aviso">
+      <h2>Aviso curto obrigatório para interface e campanhas</h2>
+      <div class="callout">
+        <h3>Aviso de risco</h3>
+        <p>Este token não representa investimento, ação, participação societária, dívida, recebível, moeda oficial ou promessa de lucro. Sua finalidade, quando aplicável, é exclusivamente de utilidade, acesso, desconto, voucher ou crédito de consumo conforme documento específico. Não há garantia de preço, valorização, liquidez, listagem ou recuperação do valor pago. A classificação jurídica depende da estrutura e da forma de oferta. Leia os riscos e procure orientação profissional independente antes de participar.</p>
+      </div>
+    </section>
+
+    <section id="checklist">
+      <h2>Checklist de aprovação antes do lançamento</h2>
+      <ul>
+        <li>Razão social, CNPJ, representantes e beneficiários finais confirmados.</li>
+        <li>Jurisdição, lei aplicável e público-alvo definidos.</li>
+        <li>Utilidade real e produtos/serviços de resgate documentados.</li>
+        <li>Oferta máxima limitada a 25.000.000 de tokens.</li>
+        <li>Quantidade inicial definida e comprovada.</li>
+        <li>Mint revogado, inclusive funções proxy e administradores, quando tecnicamente aplicável.</li>
+        <li>Situação da função de congelamento declarada e verificada.</li>
+        <li>Regra de concentração de até 30% definida, com metodologia e monitoramento.</li>
+        <li>Auditoria técnica ou revisão independente concluída.</li>
+        <li>Análise jurídica de possível valor mobiliário concluída.</li>
+        <li>KYC/AML e sanções definidos.</li>
+        <li>Plano de liquidez sem promessa de preço ou retorno.</li>
+        <li>Whitepaper, termos, política de privacidade e avisos aprovados.</li>
+        <li>Materiais de marketing revisados para remover linguagem de investimento.</li>
+        <li>Prestadores regulados contratados, quando exigidos.</li>
+        <li>Canal de suporte, incidentes, reclamações e retirada definido.</li>
+      </ul>
+    </section>
+
+    <section id="anexo">
+      <h2>Anexo — Política internacional de conformidade e delimitação de atuação</h2>
+
+      <h3>A. Princípio de conformidade</h3>
+      <p>A Casa da Moeda Master Digital não promete imunidade contra fiscalização, investigação, solicitação de informações ou aplicação de leis estrangeiras. A plataforma deverá operar de forma transparente e cooperar com autoridades competentes quando houver obrigação legal válida.</p>
+      <p>Nenhuma disposição destes Termos deverá ser interpretada como tentativa de afastar a aplicação de leis obrigatórias, ocultar a identidade dos responsáveis, dissimular a localização da operação, evitar controles de prevenção à lavagem de dinheiro ou impedir a supervisão de autoridades.</p>
+
+      <h3>B. Avaliação por jurisdição</h3>
+      <p>Antes de disponibilizar qualquer token, a Plataforma e a Empresa Cliente deverão avaliar, pelo menos:</p>
+      <ul>
+        <li>local de constituição e administração da emissora;</li>
+        <li>países de residência dos usuários e compradores;</li>
+        <li>local da equipe que promove, vende ou administra o projeto;</li>
+        <li>meios de pagamento utilizados;</li>
+        <li>existência de oferta pública, mercado secundário ou negociação;</li>
+        <li>natureza econômica do token;</li>
+        <li>prestação de serviços de custódia, intermediação ou troca; e</li>
+        <li>regras de proteção ao consumidor, privacidade, sanções e prevenção à lavagem de dinheiro.</li>
+      </ul>
+      <p>Quando a análise indicar risco regulatório não resolvido, o lançamento deverá ser suspenso até a conclusão de parecer jurídico específico.</p>
+
+      <h3>C. Restrição lícita de acesso</h3>
+      <p>A Plataforma poderá limitar ou bloquear o acesso de usuários de determinadas jurisdições quando isso for necessário para cumprir lei, ordem de autoridade, sanções econômicas, regras de licenciamento ou política de risco. O bloqueio deverá ser aplicado de maneira documentada e não deverá ser usado para dissimular uma oferta irregular.</p>
+      <p>A utilização de VPN, dados falsos, interposição de terceiros ou qualquer mecanismo destinado a contornar restrições geográficas poderá resultar em encerramento da conta e preservação de registros, conforme a lei aplicável.</p>
+
+      <h3>D. Proibição de oferta irregular</h3>
+      <p>A Plataforma não permitirá campanhas que sejam publicamente direcionadas a residentes de uma jurisdição sem que a Empresa Cliente tenha concluído a análise legal e obtido os registros, licenças, dispensas ou prestadores autorizados necessários. Em especial, nenhum token poderá ser divulgado como investimento, oportunidade de renda, promessa de valorização, participação em empreendimento ou direito a fluxo de caixa sem a estrutura regulatória correspondente.</p>
+
+      <h3>E. Estrutura operacional permitida</h3>
+      <p>Sempre que possível e juridicamente adequado, a Plataforma deverá manter separadas:</p>
+      <ul>
+        <li>a tecnologia fornecida pela Plataforma;</li>
+        <li>a emissão e a responsabilidade econômica da Empresa Cliente;</li>
+        <li>a custódia, quando existente, por prestador habilitado;</li>
+        <li>o KYC/AML por provedor especializado; e</li>
+        <li>a análise jurídica e regulatória por profissionais independentes.</li>
+      </ul>
+      <p>Essa separação reduz confusão de responsabilidades, mas não elimina a possibilidade de a Plataforma ou outro participante ser considerado prestador regulado conforme sua atuação real.</p>
+
+      <h3>F. Transparência e cooperação</h3>
+      <p>A Plataforma deverá manter registros razoáveis sobre clientes, parâmetros do token, aprovações, comunicações, incidentes, reclamações e decisões de bloqueio. Os registros deverão ser protegidos conforme a legislação de privacidade e disponibilizados a autoridades somente quando houver fundamento jurídico aplicável.</p>
+
+      <h3>G. Cláusula de não garantia regulatória</h3>
+      <p>A Empresa Cliente reconhece que a contratação da Plataforma, a publicação destes Termos, a utilização de blockchain, a revogação do <em>mint</em>, a ausência de promessa de lucro ou a limitação de concentração não constituem autorização, registro, dispensa ou opinião vinculante de qualquer autoridade. A Empresa Cliente deverá obter parecer jurídico específico antes do lançamento e atualizar a análise quando alterar a finalidade, a distribuição, a liquidez, o público-alvo, a governança, a custódia ou a forma de negociação do token.</p>
+    </section>
+  </main>
+
+  <footer class="site">
+    <div class="wrap">
+      <div class="links">
+        <a href="index.html">Início</a>
+        <a href="privacidade.html">Política de Privacidade</a>
+        <a href="contrato.html">Contrato</a>
+      </div>
+      <p>© <span id="year"></span> Casa da Moeda Master Digital · Documento preliminar, sujeito a revisão jurídica.</p>
+    </div>
+  </footer>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

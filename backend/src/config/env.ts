@@ -53,8 +53,45 @@ const EnvSchema = z
 
     /** 'live' = preços/movimentação reais (Solana + APIs públicas); 'simulated' = passeio aleatório local. */
     PRICE_FEED_MODE: z.enum(['live', 'simulated']).default('live'),
-    /** RPC pública da Solana usada para movimentação on-chain e dados de supply. */
+    /** RPC pública da Solana usada para movimentação on-chain e dados de supply (preços = mainnet). */
     SOLANA_RPC_URL: z.string().url().default('https://api.mainnet-beta.solana.com'),
+
+    // ---------------------------------------------------------------- Custódia on-chain (dispatcher real)
+    // Ponte backend → Solana para ENVIAR tokens na liquidação de ordens P2P.
+    // RPC própria (separada da do feed de preços, que lê mainnet) para apontar à devnet sem quebrar os preços.
+    /** 'auto' = usa o dispatcher real se houver keypair da tesouraria; senão simula. 'simulated'/'solana' forçam o modo. */
+    DISPATCHER_MODE: z.enum(['auto', 'simulated', 'solana']).default('auto'),
+    /** RPC usada pelo dispatcher real (devnet por padrão). Independente de SOLANA_RPC_URL. */
+    SOLANA_DISPATCH_RPC_URL: z.string().url().default('https://api.devnet.solana.com'),
+    /** Rótulo do cluster do dispatcher (apenas para logs e links do explorer). */
+    SOLANA_DISPATCH_CLUSTER: z.enum(['mainnet', 'devnet', 'testnet']).default('devnet'),
+    /** Caminho do arquivo de keypair da tesouraria (formato array JSON do solana-keygen). Nunca commitar. */
+    SOLANA_TREASURY_KEYPAIR_PATH: z.string().optional(),
+    /** Alternativa ao arquivo: secret key da tesouraria em base58 (hot wallet). Preferir o arquivo. */
+    SOLANA_TREASURY_SECRET_KEY: z.string().optional(),
+    // ---------------------------------------------------------------- Programa on-chain mastter_factory
+    /** RPC usada pelo cliente Anchor do mastter_factory (devnet por padrão). */
+    FACTORY_RPC_URL: z.string().url().default('https://api.devnet.solana.com'),
+    /** Rótulo do cluster do factory (links do explorer / status). */
+    FACTORY_CLUSTER: z.enum(['mainnet', 'devnet', 'testnet']).default('devnet'),
+    /** Keypair do comprador/pagador que assina as instruções do factory. Default: a tesouraria. */
+    FACTORY_BUYER_KEYPAIR_PATH: z.string().optional(),
+    FACTORY_BUYER_SECRET_KEY: z.string().optional(),
+    /** Mapa símbolo→mint no cluster do dispatcher, ex.: "BDC:...,VRC:...,ESCT:...". Sobrepõe os mints de mainnet. */
+    SOLANA_TOKEN_MINTS: z
+      .string()
+      .optional()
+      .transform((v) =>
+        (v ?? '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .reduce<Record<string, string>>((acc, pair) => {
+            const [sym, mint] = pair.split(':').map((x) => x.trim());
+            if (sym && mint) acc[sym.toUpperCase()] = mint;
+            return acc;
+          }, {}),
+      ),
 
     // E-mail transacional (Zoho SMTP). Sem SMTP_USER/SMTP_PASS em dev, os códigos vão para o log.
     SMTP_HOST: z.string().default('smtp.zoho.com'),

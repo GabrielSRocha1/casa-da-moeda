@@ -1,5 +1,5 @@
 import express, { type Express } from 'express';
-import { LEGAL_DISCLAIMER } from './config/constants.js';
+import { LEGAL_DISCLAIMER, NATIVE_TOKENS } from './config/constants.js';
 import type { Env } from './config/env.js';
 import type { DatabaseHandle } from './db/client.js';
 import { errorHandler, notFoundHandler } from './middlewares/error-handler.js';
@@ -15,6 +15,9 @@ import { ConsolePhoneVerifier, TwilioPhoneVerifier, type PhoneVerifier } from '.
 import { verificationRoutes } from './modules/verification/verification.routes.js';
 import { VerificationService } from './modules/verification/verification.service.js';
 import { SimulatedTokenDispatcher, type TokenDispatcher } from './modules/p2p/custody/token-dispatcher.js';
+import { SolanaTokenDispatcher } from './modules/p2p/custody/solana-dispatcher.js';
+import { FactoryClient } from './modules/factory/factory-client.js';
+import { factoryRoutes } from './modules/factory/factory.routes.js';
 import { p2pRoutes } from './modules/p2p/p2p.routes.js';
 import { P2PService } from './modules/p2p/p2p.service.js';
 import { SimulatedPixProvider, type PaymentProvider } from './modules/p2p/payments/payment-provider.js';
@@ -52,9 +55,10 @@ export function createApp(deps: AppDeps): AppContainer {
   const payments =
     deps.paymentProvider ??
     new SimulatedPixProvider({ pixKey: env.PIX_KEY, merchantName: env.PIX_MERCHANT_NAME, merchantCity: env.PIX_MERCHANT_CITY });
-  const dispatcher = deps.dispatcher ?? new SimulatedTokenDispatcher();
+  const dispatcher = deps.dispatcher ?? buildDispatcher(env, logger);
   const p2p = new P2PService(db, env, tokens, wallet, payments, dispatcher, logger);
   const b2b = new B2BService(db, wallet, logger);
+  const factory = buildFactoryClient(env, logger);
 
   // Confirmação de e-mail/telefone: providers reais quando há credenciais; console em dev/test.
   const emailSender =
@@ -133,6 +137,20 @@ export function createApp(deps: AppDeps): AppContainer {
     }),
   );
 
+  // Status da custódia on-chain (qual dispatcher está ativo, cluster, tesouraria e mints).
+  app.get('/api/custody', (_req, res) => {
+    const status =
+      dispatcher instanceof SolanaTokenDispatcher
+        ? { mode: 'onchain', ...dispatcher.status() }
+        : { mode: 'simulated', dispatcher: dispatcher.name };
+    res.json(status);
+  });
+
+  if (factory) {
+    app.use('/api/factory', factoryRoutes(factory, { webhook: guards.webhook, write: guards.write }));
+    logger.info({ programId: factory.programId.toBase58(), buyer: factory.buyerAddress }, 'mastter_factory: cliente on-chain ativo (/api/factory)');
+  }
+
   app.use('/api/tokens', tokensRoutes(tokens));
   app.use('/api/wallet', walletRoutes(wallet));
   app.use('/api/p2p', p2pRoutes(p2p, guards));
@@ -145,4 +163,68 @@ export function createApp(deps: AppDeps): AppContainer {
   app.use(errorHandler);
 
   return { app, services: { tokens, wallet, p2p, b2b, verification, auth } };
+}
+
+/**
+ * Escolhe o dispatcher de custódia conforme o ambiente:
+ * - 'solana' (ou 'auto' com keypair da tesouraria presente) → transferência SPL real on-chain;
+ * - caso contrário → dispatcher simulado (comportamento anterior, usado em dev/test).
+ * Qualquer falha ao montar o dispatcher real cai no simulado, com aviso — nunca derruba o boot.
+ */
+function buildDispatcher(env: Env, logger: Logger): TokenDispatcher {
+  const simulated = new SimulatedTokenDispatcher();
+  const hasTreasury = Boolean(env.SOLANA_TREASURY_KEYPAIR_PATH || env.SOLANA_TREASURY_SECRET_KEY);
+  const wantSolana = env.DISPATCHER_MODE === 'solana' || (env.DISPATCHER_MODE === 'auto' && hasTreasury);
+
+  if (!wantSolana) {
+    logger.info({ dispatcher: simulated.name, mode: env.DISPATCHER_MODE }, 'Custódia on-chain: dispatcher simulado');
+    return simulated;
+  }
+
+  // No cluster do dispatcher só valem os mints informados por env; em mainnet, mescla com os nativos conhecidos.
+  const baseMints =
+    env.SOLANA_DISPATCH_CLUSTER === 'mainnet'
+      ? Object.fromEntries(NATIVE_TOKENS.map((t) => [t.symbol, t.mint]))
+      : {};
+  const mints = { ...baseMints, ...env.SOLANA_TOKEN_MINTS };
+
+  try {
+    const solana = new SolanaTokenDispatcher({
+      rpcUrl: env.SOLANA_DISPATCH_RPC_URL,
+      cluster: env.SOLANA_DISPATCH_CLUSTER,
+      treasuryKeypairPath: env.SOLANA_TREASURY_KEYPAIR_PATH,
+      treasurySecretKey: env.SOLANA_TREASURY_SECRET_KEY,
+      mints,
+      fallback: simulated,
+      logger,
+    });
+    logger.info(solana.status(), 'Custódia on-chain: dispatcher REAL ativo');
+    return solana;
+  } catch (err) {
+    logger.error({ err }, 'Falha ao montar o dispatcher real; usando o simulado');
+    return simulated;
+  }
+}
+
+/**
+ * Monta o cliente Anchor do mastter_factory se houver keypair de comprador (a tesouraria, por padrão).
+ * Retorna null quando não configurado — nesse caso as rotas /api/factory não são montadas.
+ */
+function buildFactoryClient(env: Env, logger: Logger): FactoryClient | null {
+  const buyerKeypairPath = env.FACTORY_BUYER_KEYPAIR_PATH ?? env.SOLANA_TREASURY_KEYPAIR_PATH;
+  const buyerSecretKey = env.FACTORY_BUYER_SECRET_KEY ?? env.SOLANA_TREASURY_SECRET_KEY;
+  if (!buyerKeypairPath && !buyerSecretKey) return null;
+
+  try {
+    return new FactoryClient({
+      rpcUrl: env.FACTORY_RPC_URL,
+      cluster: env.FACTORY_CLUSTER,
+      buyerKeypairPath,
+      buyerSecretKey,
+      logger,
+    });
+  } catch (err) {
+    logger.error({ err }, 'Falha ao montar o cliente do mastter_factory; rotas /api/factory desativadas');
+    return null;
+  }
 }

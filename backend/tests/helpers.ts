@@ -18,6 +18,8 @@ export async function buildTestApp(envOverrides: Record<string, unknown> = {}, e
     RATE_LIMIT_ENABLED: 'false',
     WEBHOOK_SECRET,
     AUTO_SETTLE: 'false',
+    // Testes nunca fazem transferências on-chain reais; isola do .env local.
+    DISPATCHER_MODE: 'simulated',
     ...envOverrides,
   });
   const database = await createDatabase(env.DATABASE_URL);

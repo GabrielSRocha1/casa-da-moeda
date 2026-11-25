@@ -2,20 +2,60 @@ import { Router, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { badRequest } from '../../shared/errors.js';
 import type { FactoryClient } from './factory-client.js';
+import { getMarkets } from './markets.js';
 
-const BuySchema = z.object({
-  entityId: z.union([z.number().int().nonnegative(), z.string().regex(/^\d+$/)]),
-  asset: z.enum(['sol', 'usdc']),
-  /** Unidades-base: lamports (SOL) ou micro-USDC (USDC). */
-  amountIn: z.union([z.number().int().positive(), z.string().regex(/^\d+$/)]),
-  minTokensOut: z.union([z.number().int().nonnegative(), z.string().regex(/^\d+$/)]).optional(),
-  deadlineTs: z.number().int().nonnegative().optional(),
+const base58 = z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, 'endereço base58 inválido');
+const uintStr = z.union([z.number().int().nonnegative(), z.string().regex(/^\d+$/)]);
+const posStr = z.union([z.number().int().positive(), z.string().regex(/^[1-9]\d*$/)]);
+
+const InitPoolSchema = z.object({
+  quoteMint: base58.optional(),
+  tokenDecimals: z.number().int().min(0).max(9),
+  maxSupply: posStr,
+  initialPrice: posStr,
+  buyFeeBps: z.number().int().min(0).max(1000),
+  sellFeeBps: z.number().int().min(0).max(1000),
   simulate: z.boolean().optional(),
 });
 
-/** Rotas de integração com o programa on-chain mastter_factory. `guards.webhook` protege a escrita. */
+const BuySchema = z.object({
+  tokenMint: base58,
+  quoteIn: posStr,
+  minTokensOut: uintStr.optional(),
+  simulate: z.boolean().optional(),
+});
+
+const SellSchema = z.object({
+  tokenMint: base58,
+  tokensIn: posStr,
+  minQuoteOut: uintStr.optional(),
+  simulate: z.boolean().optional(),
+});
+
+const InjectSchema = z.object({
+  tokenMint: base58,
+  amount: posStr,
+  reference: z.string().min(1).max(128),
+  simulate: z.boolean().optional(),
+});
+
+const PausedSchema = z.object({ tokenMint: base58, paused: z.boolean() });
+
+function parse<T>(schema: z.ZodSchema<T>, body: unknown): T {
+  const r = schema.safeParse(body);
+  if (!r.success) {
+    throw badRequest('INVALID_INPUT', r.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '));
+  }
+  return r.data;
+}
+
+/**
+ * Rotas do programa on-chain `mastter_factory` (modelo Cofre de Cunhagem Evolutiva).
+ * `guards.webhook` + `guards.write` protegem as rotas de escrita (custodiais).
+ */
 export function factoryRoutes(factory: FactoryClient, guards: { webhook: RequestHandler; write: RequestHandler }): Router {
   const r = Router();
+  const write: RequestHandler[] = [guards.webhook, guards.write];
 
   r.get('/status', async (_req, res, next) => {
     try {
@@ -25,34 +65,84 @@ export function factoryRoutes(factory: FactoryClient, guards: { webhook: Request
     }
   });
 
-  r.get('/vault/:id', async (req, res, next) => {
+  // Dados de mercado p/ o terminal: majors reais (CoinGecko) + tokens on-chain.
+  r.get('/markets', async (_req, res, next) => {
     try {
-      const id = req.params.id;
-      if (!/^\d+$/.test(id)) throw badRequest('INVALID_ENTITY_ID', 'entityId inválido.');
-      const v = await factory.getVault(id);
-      res.json({
-        entityId: v.entityId?.toString?.() ?? String(v.entityId),
-        status: v.status,
-        tokenName: v.tokenName,
-        tokenSymbol: v.tokenSymbol,
-        mint: v.mint?.toBase58?.() ?? null,
-        circulatingSupply: v.circulatingSupply?.toString?.() ?? null,
-        hardCap: v.hardCap?.toString?.() ?? null,
-      });
+      res.json(await getMarkets());
     } catch (err) {
       next(err);
     }
   });
 
-  // Compra custodial on-chain: o backend (hot wallet) chama buy_tokens.
-  r.post('/buy', guards.webhook, guards.write, async (req, res, next) => {
+  // Top holders reais on-chain de um mint (para o mapa de holders).
+  r.get('/holders/:mint', async (req, res, next) => {
     try {
-      const parsed = BuySchema.safeParse(req.body);
-      if (!parsed.success) {
-        throw badRequest('INVALID_BUY_INPUT', parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '));
-      }
-      const result = await factory.buyTokens(parsed.data);
-      res.status(parsed.data.simulate ? 200 : 201).json(result);
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(req.params.mint)) throw badRequest('INVALID_MINT', 'mint inválido.');
+      const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
+      res.json(await factory.getHolders(req.params.mint, limit));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  r.get('/pool/:mint', async (req, res, next) => {
+    try {
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(req.params.mint)) throw badRequest('INVALID_MINT', 'mint inválido.');
+      res.json(await factory.getPool(req.params.mint));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Cria um novo token (supply 0) + pool.
+  r.post('/pool', ...write, async (req, res, next) => {
+    try {
+      const data = parse(InitPoolSchema, req.body);
+      const result = await factory.initializePool(data);
+      res.status(data.simulate ? 200 : 201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Compra custodial: dinheiro entra, token sai.
+  r.post('/buy', ...write, async (req, res, next) => {
+    try {
+      const data = parse(BuySchema, req.body);
+      const result = await factory.buy(data);
+      res.status(data.simulate ? 200 : 201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Venda custodial: token volta ao cofre, USDC sai (única saída de USDC).
+  r.post('/sell', ...write, async (req, res, next) => {
+    try {
+      const data = parse(SellSchema, req.body);
+      const result = await factory.sell(data);
+      res.status(data.simulate ? 200 : 201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Injeção de USDC sem emitir tokens (idempotente por referência).
+  r.post('/inject', ...write, async (req, res, next) => {
+    try {
+      const data = parse(InjectSchema, req.body);
+      const result = await factory.injectQuote(data);
+      res.status(data.simulate ? 200 : 201).json(result);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Pausa/retoma compras e injeções (vendas nunca pausam).
+  r.post('/paused', ...write, async (req, res, next) => {
+    try {
+      const data = parse(PausedSchema, req.body);
+      res.json(await factory.setPaused(data.tokenMint, data.paused));
     } catch (err) {
       next(err);
     }

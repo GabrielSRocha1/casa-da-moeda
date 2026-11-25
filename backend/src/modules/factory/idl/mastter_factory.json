@@ -8,111 +8,247 @@
   },
   "instructions": [
     {
-      "name": "accept_admin",
-      "docs": [
-        "Transferência de administração em dois passos (2/2)."
-      ],
+      "name": "accept_authority",
       "discriminator": [
-        112,
-        42,
-        45,
-        90,
-        116,
-        181,
-        13,
-        170
+        107,
+        86,
+        198,
+        91,
+        33,
+        12,
+        107,
+        160
       ],
       "accounts": [
         {
-          "name": "new_admin",
+          "name": "new_authority",
           "signer": true
         },
         {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
+          "name": "pool",
+          "writable": true
         }
       ],
       "args": []
     },
     {
-      "name": "activate_entity_vault",
-      "docs": [
-        "Ativa o cofre: Mint Token-2022, cofres SOL/USDC, vesting de 30% e lastro inicial.",
-        "Nome, símbolo, URI e hash da imagem ficam imutáveis a partir daqui."
-      ],
+      "name": "buy",
       "discriminator": [
-        99,
-        96,
-        15,
-        204,
-        220,
-        149,
-        140,
-        163
+        102,
+        6,
+        61,
+        18,
+        1,
+        218,
+        235,
+        234
       ],
       "accounts": [
         {
-          "name": "admin",
+          "name": "buyer",
           "writable": true,
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "funder",
-          "docs": [
-            "Quem aporta o lastro inicial em USDC (pode ser o próprio admin ou o pagador da entidade)."
-          ],
           "signer": true
         },
         {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
+          "name": "pool",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint",
+          "writable": true,
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "quote_mint",
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "token_vault",
+          "writable": true,
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "quote_vault",
+          "writable": true,
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "buyer_quote_account",
+          "writable": true
+        },
+        {
+          "name": "buyer_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "buyer"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "token_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "quote_in",
+          "type": "u64"
+        },
+        {
+          "name": "min_tokens_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_pool",
+      "discriminator": [
+        95,
+        180,
+        10,
+        172,
+        84,
+        174,
+        232,
+        40
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint",
+          "docs": [
+            "Novo keypair: o token nasce aqui, sem nenhum token cunhado."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "quote_mint",
+          "docs": [
+            "Moeda de cotação (USDC). Programa SPL Token clássico: sem taxa de",
+            "transferência nem hooks que quebrariam a contabilidade."
+          ]
+        },
+        {
+          "name": "token_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
                   101,
                   110,
-                  116,
-                  105,
-                  116,
-                  121,
                   95,
                   118,
                   97,
@@ -123,43 +259,135 @@
               },
               {
                 "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
+                "path": "pool"
               }
             ]
-          },
-          "relations": [
-            "ledger"
-          ]
+          }
         },
         {
-          "name": "ledger",
+          "name": "quote_vault",
           "writable": true,
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
+                  113,
+                  117,
+                  111,
+                  116,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
                   108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
+                  116
                 ]
               },
               {
                 "kind": "account",
-                "path": "vault"
+                "path": "pool"
               }
             ]
           }
         },
         {
-          "name": "mint",
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitializePoolParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "inject_quote",
+      "discriminator": [
+        113,
+        143,
+        141,
+        242,
+        123,
+        40,
+        47,
+        33
+      ],
+      "accounts": [
+        {
+          "name": "depositor",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "pool",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  111,
+                  111,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint",
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "quote_mint",
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "token_vault",
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "quote_vault",
+          "writable": true,
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "depositor_quote_account",
+          "writable": true
+        },
+        {
+          "name": "deposit_record",
           "docs": [
-            "Mint Token-2022 da entidade: mint authority = PDA do cofre, freeze authority nula,",
-            "extensões: MetadataPointer + TokenMetadata (somente)."
+            "`init` falha se a referência já existir → impede depósito duplicado."
           ],
           "writable": true,
           "pda": {
@@ -167,143 +395,25 @@
               {
                 "kind": "const",
                 "value": [
-                  109,
+                  100,
+                  101,
+                  112,
+                  111,
+                  115,
                   105,
-                  110,
                   116
                 ]
               },
               {
                 "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "vesting",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  101,
-                  115,
-                  116,
-                  105,
-                  110,
-                  103
-                ]
+                "path": "pool"
               },
               {
-                "kind": "account",
-                "path": "vault"
+                "kind": "arg",
+                "path": "reference"
               }
             ]
           }
-        },
-        {
-          "name": "vesting_escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  101,
-                  115,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "sol_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  111,
-                  108,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "usdc_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  117,
-                  115,
-                  100,
-                  99,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "usdc_mint"
-        },
-        {
-          "name": "funder_usdc_account",
-          "writable": true
-        },
-        {
-          "name": "token_2022_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
         {
           "name": "token_program",
@@ -316,11 +426,11 @@
       ],
       "args": [
         {
-          "name": "token_uri",
-          "type": "string"
+          "name": "amount",
+          "type": "u64"
         },
         {
-          "name": "image_sha256",
+          "name": "reference",
           "type": {
             "array": [
               "u8",
@@ -331,994 +441,56 @@
       ]
     },
     {
-      "name": "buy_tokens",
-      "docs": [
-        "Compra de tokens com SOL ou USDC."
-      ],
+      "name": "propose_authority",
       "discriminator": [
-        189,
-        21,
+        20,
+        148,
+        236,
+        198,
+        76,
+        119,
+        99,
+        142
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "pool"
+          ]
+        },
+        {
+          "name": "pool",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "sell",
+      "discriminator": [
+        51,
         230,
         133,
-        247,
-        2,
-        110,
-        42
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          },
-          "relations": [
-            "ledger"
-          ]
-        },
-        {
-          "name": "ledger",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "mint",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  109,
-                  105,
-                  110,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "user_token_account",
-          "docs": [
-            "Conta Token-2022 do comprador para o token da entidade."
-          ],
-          "writable": true
-        },
-        {
-          "name": "buyer_record",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  117,
-                  121,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
-          "name": "sol_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  111,
-                  108,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "usdc_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  117,
-                  115,
-                  100,
-                  99,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "usdc_mint"
-        },
-        {
-          "name": "user_usdc_account",
-          "docs": [
-            "Conta USDC do comprador (obrigatória quando asset = Usdc)."
-          ],
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "revenue_wallet",
-          "writable": true,
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "revenue_usdc_account",
-          "docs": [
-            "Conta USDC da carteira de receita (obrigatória quando asset = Usdc)."
-          ],
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "sol_price_feed"
-        },
-        {
-          "name": "usdc_price_feed"
-        },
-        {
-          "name": "token_2022_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "asset",
-          "type": {
-            "defined": {
-              "name": "PaymentAsset"
-            }
-          }
-        },
-        {
-          "name": "amount_in",
-          "type": "u64"
-        },
-        {
-          "name": "min_tokens_out",
-          "type": "u64"
-        },
-        {
-          "name": "deadline_ts",
-          "type": "i64"
-        }
-      ]
-    },
-    {
-      "name": "claim_vested_tokens",
-      "docs": [
-        "Saque dos tokens liberados pelo vesting para a Verum Wallet."
-      ],
-      "discriminator": [
-        165,
-        219,
-        11,
-        0,
-        187,
-        52,
-        142,
-        199
-      ],
-      "accounts": [
-        {
-          "name": "beneficiary",
-          "docs": [
-            "A própria Verum Wallet cadastrada deve assinar."
-          ],
-          "signer": true,
-          "relations": [
-            "vesting"
-          ]
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          },
-          "relations": [
-            "ledger",
-            "vesting"
-          ]
-        },
-        {
-          "name": "ledger",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "vesting",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  101,
-                  115,
-                  116,
-                  105,
-                  110,
-                  103
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "escrow",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  118,
-                  101,
-                  115,
-                  116,
-                  105,
-                  110,
-                  103,
-                  95,
-                  101,
-                  115,
-                  99,
-                  114,
-                  111,
-                  119
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vesting"
-          ]
-        },
-        {
-          "name": "mint",
-          "relations": [
-            "vault",
-            "vesting"
-          ]
-        },
-        {
-          "name": "destination",
-          "docs": [
-            "Conta Token-2022 de destino: obrigatoriamente de propriedade da Verum Wallet."
-          ],
-          "writable": true
-        },
-        {
-          "name": "token_2022_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "close_minting",
-      "docs": [
-        "IRREVERSÍVEL: revoga a Mint Authority do token da entidade."
-      ],
-      "discriminator": [
-        206,
-        132,
-        179,
-        8,
-        201,
-        208,
-        243,
-        6
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "mint",
-          "writable": true,
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "token_2022_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
-        }
-      ],
-      "args": [
-        {
-          "name": "confirm",
-          "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "emit_vault_snapshot",
-      "docs": [
-        "Emite um retrato contábil do cofre (NAV, preço, segregações)."
-      ],
-      "discriminator": [
-        175,
-        121,
-        179,
-        24,
-        125,
-        125,
-        252,
-        48
-      ],
-      "accounts": [
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          },
-          "relations": [
-            "ledger"
-          ]
-        },
-        {
-          "name": "ledger",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "sol_price_feed"
-        },
-        {
-          "name": "usdc_price_feed"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initialize_entity_vault",
-      "docs": [
-        "Cadastra a entidade: EntityVault + RegistryData + BackingLedger."
-      ],
-      "discriminator": [
-        99,
-        158,
-        34,
-        251,
-        190,
-        114,
-        25,
-        17
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "writable": true,
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "args.entity_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "registry",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  101,
-                  103,
-                  105,
-                  115,
-                  116,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "ledger",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "verum_wallet",
-          "docs": [
-            "igual ao parâmetro `verum_wallet_address`, distinta de admin/receita/PDAs do cofre."
-          ]
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": {
-              "name": "InitializeEntityVaultArgs"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "initialize_factory",
-      "docs": [
-        "Cria a configuração global. Somente a upgrade authority do programa."
-      ],
-      "discriminator": [
-        179,
-        64,
-        75,
-        250,
-        39,
-        254,
-        240,
-        178
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "program",
-          "docs": [
-            "O próprio programa: usado para localizar a conta ProgramData."
-          ],
-          "address": "CR2NBJLy4QBRQVC7Wd8wwyC2fFjgWHXLVwJU7QYiUEox"
-        },
-        {
-          "name": "program_data",
-          "docs": [
-            "Somente a upgrade authority atual pode inicializar (anti front-running)."
-          ]
-        },
-        {
-          "name": "usdc_mint",
-          "docs": [
-            "Mint do USDC: obrigatoriamente SPL Token clássico (sem extensões)."
-          ]
-        },
-        {
-          "name": "revenue_wallet"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": {
-              "name": "InitializeFactoryArgs"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "inject_daily_profit",
-      "docs": [
-        "Injeção de lucro/faturamento no lastro (sem cunhagem)."
-      ],
-      "discriminator": [
-        146,
-        14,
-        153,
+        164,
+        1,
         127,
-        165,
-        208,
-        6,
-        44
+        131,
+        173
       ],
       "accounts": [
         {
-          "name": "injector",
-          "docs": [
-            "Remetente autorizado (profit_injector do cofre)."
-          ],
-          "writable": true,
+          "name": "seller",
           "signer": true
         },
         {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          },
-          "relations": [
-            "ledger"
-          ]
-        },
-        {
-          "name": "ledger",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "receipt",
-          "docs": [
-            "Recibo único por `reference_id`: impede a duplicação do mesmo repasse."
-          ],
+          "name": "pool",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1326,1994 +498,612 @@
                 "kind": "const",
                 "value": [
                   112,
-                  114,
                   111,
-                  102,
-                  105,
-                  116
+                  111,
+                  108
                 ]
               },
               {
                 "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "arg",
-                "path": "reference_id"
+                "path": "token_mint"
               }
             ]
           }
         },
         {
-          "name": "sol_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  111,
-                  108,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
+          "name": "token_mint",
           "relations": [
-            "vault"
+            "pool"
           ]
         },
         {
-          "name": "usdc_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  117,
-                  115,
-                  100,
-                  99,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
+          "name": "quote_mint",
           "relations": [
-            "vault"
+            "pool"
           ]
         },
         {
-          "name": "usdc_mint"
-        },
-        {
-          "name": "injector_usdc_account",
-          "docs": [
-            "Conta USDC do remetente (obrigatória quando asset = Usdc)."
-          ],
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "revenue_wallet",
+          "name": "token_vault",
           "writable": true,
           "relations": [
-            "vault"
+            "pool"
           ]
         },
         {
-          "name": "revenue_usdc_account",
-          "docs": [
-            "Conta USDC da carteira de receita (obrigatória quando asset = Usdc e houver taxa)."
-          ],
+          "name": "quote_vault",
           "writable": true,
-          "optional": true
-        },
-        {
-          "name": "token_program",
-          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "asset",
-          "type": {
-            "defined": {
-              "name": "PaymentAsset"
-            }
-          }
-        },
-        {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
-          "name": "reference_id",
-          "type": "u64"
-        },
-        {
-          "name": "origin",
-          "type": "string"
-        }
-      ]
-    },
-    {
-      "name": "propose_admin",
-      "docs": [
-        "Transferência de administração em dois passos (1/2)."
-      ],
-      "discriminator": [
-        121,
-        214,
-        199,
-        212,
-        87,
-        39,
-        117,
-        234
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true,
           "relations": [
-            "config"
+            "pool"
           ]
         },
         {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "new_admin",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
-      "name": "sell_tokens",
-      "docs": [
-        "Resgate: queima tokens e paga o valor proporcional em SOL ou USDC."
-      ],
-      "discriminator": [
-        114,
-        242,
-        25,
-        12,
-        62,
-        126,
-        92,
-        2
-      ],
-      "accounts": [
-        {
-          "name": "user",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          },
-          "relations": [
-            "ledger"
-          ]
-        },
-        {
-          "name": "ledger",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  108,
-                  101,
-                  100,
-                  103,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "mint",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  109,
-                  105,
-                  110,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "user_token_account",
+          "name": "seller_token_account",
           "writable": true
         },
         {
-          "name": "buyer_record",
-          "docs": [
-            "Registro de compras do usuário (opcional; reduz `net_acquired` no resgate)."
-          ],
-          "writable": true,
-          "optional": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  98,
-                  117,
-                  121,
-                  101,
-                  114
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "account",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
-          "name": "sol_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  111,
-                  108,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "usdc_treasury",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  117,
-                  115,
-                  100,
-                  99,
-                  95,
-                  116,
-                  114,
-                  101,
-                  97,
-                  115,
-                  117,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          },
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "usdc_mint"
-        },
-        {
-          "name": "user_usdc_account",
-          "docs": [
-            "Conta USDC do usuário (obrigatória quando asset = Usdc)."
-          ],
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "revenue_wallet",
-          "writable": true,
-          "relations": [
-            "vault"
-          ]
-        },
-        {
-          "name": "revenue_usdc_account",
-          "docs": [
-            "Conta USDC da carteira de receita (obrigatória quando asset = Usdc)."
-          ],
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "sol_price_feed"
-        },
-        {
-          "name": "usdc_price_feed"
-        },
-        {
-          "name": "token_2022_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          "name": "seller_quote_account",
+          "writable": true
         },
         {
           "name": "token_program",
           "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "asset",
-          "type": {
-            "defined": {
-              "name": "PaymentAsset"
-            }
-          }
-        },
-        {
-          "name": "token_amount",
+          "name": "tokens_in",
           "type": "u64"
         },
         {
-          "name": "min_amount_out",
+          "name": "min_quote_out",
           "type": "u64"
-        },
-        {
-          "name": "deadline_ts",
-          "type": "i64"
         }
       ]
     },
     {
-      "name": "set_factory_paused",
-      "docs": [
-        "Pausa/retoma todos os cofres."
-      ],
+      "name": "set_paused",
       "discriminator": [
-        31,
+        91,
+        60,
+        125,
         192,
-        53,
-        146,
-        185,
-        159,
-        2,
-        2
+        176,
+        225,
+        166,
+        218
       ],
       "accounts": [
         {
-          "name": "admin",
+          "name": "authority",
           "signer": true,
           "relations": [
-            "config"
+            "pool"
           ]
         },
         {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
+          "name": "pool",
+          "writable": true
         }
       ],
       "args": [
         {
           "name": "paused",
           "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "set_vault_paused",
-      "docs": [
-        "Pausa/retoma um cofre específico."
-      ],
-      "discriminator": [
-        239,
-        131,
-        203,
-        69,
-        243,
-        11,
-        234,
-        153
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "paused",
-          "type": "bool"
-        }
-      ]
-    },
-    {
-      "name": "update_entity_config",
-      "docs": [
-        "Ajusta anti-whale, taxa, remetente de lucro e carteira de receita do cofre."
-      ],
-      "discriminator": [
-        255,
-        55,
-        35,
-        185,
-        0,
-        127,
-        243,
-        155
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          }
-        },
-        {
-          "name": "new_revenue_wallet",
-          "optional": true
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": {
-              "name": "UpdateEntityConfigArgs"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "update_factory_config",
-      "docs": [
-        "Atualiza oráculo, limites e carteira de receita padrão."
-      ],
-      "discriminator": [
-        219,
-        46,
-        19,
-        240,
-        1,
-        37,
-        160,
-        26
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "config",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "new_revenue_wallet",
-          "optional": true
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": {
-              "name": "UpdateFactoryConfigArgs"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "update_registry_data",
-      "docs": [
-        "Atualiza os dados cadastrais (RegistryData)."
-      ],
-      "discriminator": [
-        229,
-        2,
-        140,
-        107,
-        68,
-        77,
-        169,
-        238
-      ],
-      "accounts": [
-        {
-          "name": "admin",
-          "signer": true,
-          "relations": [
-            "config"
-          ]
-        },
-        {
-          "name": "config",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "vault",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  101,
-                  110,
-                  116,
-                  105,
-                  116,
-                  121,
-                  95,
-                  118,
-                  97,
-                  117,
-                  108,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault.entity_id",
-                "account": "EntityVault"
-              }
-            ]
-          },
-          "relations": [
-            "registry"
-          ]
-        },
-        {
-          "name": "registry",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  114,
-                  101,
-                  103,
-                  105,
-                  115,
-                  116,
-                  114,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "vault"
-              }
-            ]
-          }
-        }
-      ],
-      "args": [
-        {
-          "name": "args",
-          "type": {
-            "defined": {
-              "name": "UpdateRegistryArgs"
-            }
-          }
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "BackingLedger",
+      "name": "DepositRecord",
       "discriminator": [
-        125,
-        37,
-        162,
-        46,
-        228,
-        7,
-        57,
-        128
-      ]
-    },
-    {
-      "name": "BuyerRecord",
-      "discriminator": [
-        107,
-        122,
-        54,
-        31,
-        4,
-        54,
-        209,
-        38
-      ]
-    },
-    {
-      "name": "EntityVault",
-      "discriminator": [
-        79,
-        128,
-        25,
-        157,
-        42,
-        103,
-        87,
-        3
-      ]
-    },
-    {
-      "name": "FactoryConfig",
-      "discriminator": [
-        29,
-        197,
-        255,
+        83,
         232,
-        22,
-        128,
-        67,
-        26
-      ]
-    },
-    {
-      "name": "ProfitReceipt",
-      "discriminator": [
-        213,
-        202,
-        107,
-        202,
-        68,
-        206,
-        130,
-        222
-      ]
-    },
-    {
-      "name": "RegistryData",
-      "discriminator": [
-        43,
-        38,
-        167,
-        114,
-        213,
-        31,
-        56,
-        240
-      ]
-    },
-    {
-      "name": "VestingAccount",
-      "discriminator": [
-        102,
-        73,
         10,
-        233,
-        200,
-        188,
-        228,
-        216
+        31,
+        251,
+        49,
+        189,
+        167
+      ]
+    },
+    {
+      "name": "Pool",
+      "discriminator": [
+        241,
+        154,
+        109,
+        4,
+        17,
+        177,
+        109,
+        188
       ]
     }
   ],
   "events": [
     {
-      "name": "AdministrativeConfigurationUpdated",
+      "name": "AuthorityProposed",
       "discriminator": [
-        247,
-        62,
-        128,
-        57,
-        184,
-        255,
-        213,
-        63
+        244,
+        117,
+        94,
+        112,
+        53,
+        151,
+        35,
+        89
       ]
     },
     {
-      "name": "EntityVaultActivated",
+      "name": "AuthorityTransferred",
       "discriminator": [
-        87,
-        79,
-        104,
-        79,
-        231,
-        128,
-        206,
-        181
+        245,
+        109,
+        179,
+        54,
+        135,
+        92,
+        22,
+        64
       ]
     },
     {
-      "name": "EntityVaultInitialized",
+      "name": "MintingCompleted",
       "discriminator": [
-        231,
-        161,
-        250,
-        30,
-        98,
-        77,
-        46,
-        131
-      ]
-    },
-    {
-      "name": "FactoryInitialized",
-      "discriminator": [
-        20,
         86,
-        103,
-        75,
-        20,
-        220,
-        162,
-        63
+        50,
+        130,
+        2,
+        126,
+        179,
+        63,
+        237
       ]
     },
     {
-      "name": "HardCapReached",
+      "name": "PausedChanged",
       "discriminator": [
-        130,
-        230,
-        83,
-        152,
-        186,
-        0,
-        27,
+        12,
+        10,
+        153,
+        247,
+        60,
+        115,
+        137,
+        69
+      ]
+    },
+    {
+      "name": "PoolInitialized",
+      "discriminator": [
+        100,
+        118,
+        173,
+        87,
+        12,
+        198,
+        254,
         229
       ]
     },
     {
-      "name": "PlatformFeeCollected",
+      "name": "QuoteInjected",
       "discriminator": [
-        44,
-        79,
-        0,
-        185,
-        164,
-        86,
-        134,
-        83
+        121,
+        61,
+        28,
+        201,
+        5,
+        183,
+        187,
+        173
       ]
     },
     {
-      "name": "ProfitInjected",
+      "name": "TokensBought",
       "discriminator": [
-        189,
-        100,
-        234,
-        185,
-        112,
-        120,
-        192,
-        254
-      ]
-    },
-    {
-      "name": "TokenPurchased",
-      "discriminator": [
-        3,
-        73,
-        186,
-        50,
-        15,
-        181,
-        213,
-        37
-      ]
-    },
-    {
-      "name": "TokenRedeemed",
-      "discriminator": [
-        75,
-        7,
-        43,
-        228,
-        204,
-        167,
-        97,
-        76
-      ]
-    },
-    {
-      "name": "VaultPaused",
-      "discriminator": [
-        198,
-        157,
-        22,
         151,
-        68,
-        100,
-        162,
-        35
-      ]
-    },
-    {
-      "name": "VaultResumed",
-      "discriminator": [
-        208,
+        148,
         173,
-        238,
-        64,
-        33,
-        63,
         226,
-        151
+        128,
+        30,
+        249,
+        190
       ]
     },
     {
-      "name": "VaultSnapshot",
+      "name": "TokensSold",
       "discriminator": [
-        130,
-        0,
-        159,
-        145,
-        196,
-        29,
-        89,
-        124
-      ]
-    },
-    {
-      "name": "VestedTokensClaimed",
-      "discriminator": [
-        15,
-        7,
-        248,
-        165,
-        41,
-        118,
-        87,
-        175
+        217,
+        83,
+        68,
+        137,
+        134,
+        225,
+        94,
+        45
       ]
     }
   ],
   "errors": [
     {
       "code": 6000,
-      "name": "Unauthorized",
-      "msg": "Assinante não autorizado para esta operação"
+      "name": "ZeroAmount",
+      "msg": "Valor deve ser maior que zero"
     },
     {
       "code": 6001,
-      "name": "NotUpgradeAuthority",
-      "msg": "Somente a upgrade authority do programa pode inicializar a Factory"
+      "name": "ZeroOutput",
+      "msg": "Operação resultaria em zero"
     },
     {
       "code": 6002,
-      "name": "InvalidProgramData",
-      "msg": "Conta ProgramData inválida"
+      "name": "MathOverflow",
+      "msg": "Estouro aritmético"
     },
     {
       "code": 6003,
-      "name": "FactoryPaused",
-      "msg": "Factory pausada"
+      "name": "InvalidDecimals",
+      "msg": "Decimais do token inválidos (máximo 9)"
     },
     {
       "code": 6004,
-      "name": "VaultNotActive",
-      "msg": "Cofre não está ativo"
+      "name": "InvalidMaxSupply",
+      "msg": "Supply máximo inválido"
     },
     {
       "code": 6005,
-      "name": "InvalidVaultStatus",
-      "msg": "Cofre já foi ativado ou está em estado inválido para esta operação"
+      "name": "InvalidPrice",
+      "msg": "Preço inicial inválido"
     },
     {
       "code": 6006,
-      "name": "InvalidHardCap",
-      "msg": "Hard Cap inválido: use 25.000.000, 50.000.000 ou 100.000.000"
+      "name": "InvalidFee",
+      "msg": "Taxa acima do limite (máximo 10%)"
     },
     {
       "code": 6007,
-      "name": "InvalidDecimals",
-      "msg": "Decimais inválidos (máximo 9)"
+      "name": "SameMint",
+      "msg": "Token e moeda de cotação não podem ser iguais"
     },
     {
       "code": 6008,
-      "name": "InvalidStringLength",
-      "msg": "String vazia ou acima do tamanho máximo permitido"
+      "name": "Paused",
+      "msg": "Compras e injeções pausadas"
     },
     {
       "code": 6009,
-      "name": "InvalidAntiWhaleParams",
-      "msg": "Parâmetros anti-whale inconsistentes"
-    },
-    {
-      "code": 6010,
-      "name": "InvalidFee",
-      "msg": "Taxa de plataforma acima do teto permitido"
-    },
-    {
-      "code": 6011,
-      "name": "InvalidAmount",
-      "msg": "Valor inválido (zero ou fora dos limites)"
-    },
-    {
-      "code": 6012,
-      "name": "InvalidVerumWallet",
-      "msg": "Verum Wallet inválida"
-    },
-    {
-      "code": 6013,
-      "name": "InvalidRevenueWallet",
-      "msg": "Carteira de receita inválida"
-    },
-    {
-      "code": 6014,
-      "name": "BelowMinBuy",
-      "msg": "Compra abaixo do mínimo por transação"
-    },
-    {
-      "code": 6015,
-      "name": "AboveMaxBuy",
-      "msg": "Compra acima do máximo por transação"
-    },
-    {
-      "code": 6016,
-      "name": "MaxWalletExceeded",
-      "msg": "Limite máximo de tokens por carteira excedido"
-    },
-    {
-      "code": 6017,
-      "name": "HardCapExceeded",
-      "msg": "Hard Cap excedido"
-    },
-    {
-      "code": 6018,
-      "name": "MintingClosed",
-      "msg": "Cunhagem encerrada: Mint Authority revogada"
-    },
-    {
-      "code": 6019,
       "name": "SlippageExceeded",
       "msg": "Slippage excedido"
     },
     {
-      "code": 6020,
-      "name": "DeadlineExceeded",
-      "msg": "Prazo da transação expirado"
+      "code": 6010,
+      "name": "InsufficientInventory",
+      "msg": "Estoque de tokens do cofre insuficiente"
     },
     {
-      "code": 6021,
-      "name": "InsufficientUserBalance",
-      "msg": "Saldo insuficiente do usuário"
+      "code": 6011,
+      "name": "InsufficientReserve",
+      "msg": "Reserva de USDC insuficiente"
     },
     {
-      "code": 6022,
-      "name": "InsufficientLiquidity",
-      "msg": "Lastro contabilizado insuficiente neste ativo para o resgate"
+      "code": 6012,
+      "name": "SoldOut",
+      "msg": "Todos os tokens já foram cunhados e estão em circulação"
     },
     {
-      "code": 6023,
-      "name": "InsufficientTreasuryBalance",
-      "msg": "Saldo real do cofre insuficiente"
+      "code": 6013,
+      "name": "NotPendingAuthority",
+      "msg": "Não há transferência de administração pendente para esta conta"
     },
     {
-      "code": 6024,
-      "name": "MissingPaymentAccount",
-      "msg": "Conta do ativo de pagamento ausente"
-    },
-    {
-      "code": 6025,
-      "name": "MathOverflow",
-      "msg": "Overflow/underflow aritmético"
-    },
-    {
-      "code": 6026,
-      "name": "InvalidOracleAccount",
-      "msg": "Conta de oráculo inválida"
-    },
-    {
-      "code": 6027,
-      "name": "OracleFeedMismatch",
-      "msg": "Feed de preço não corresponde ao configurado"
-    },
-    {
-      "code": 6028,
-      "name": "StaleOraclePrice",
-      "msg": "Preço do oráculo desatualizado"
-    },
-    {
-      "code": 6029,
-      "name": "InvalidOraclePrice",
-      "msg": "Preço do oráculo inválido (não positivo)"
-    },
-    {
-      "code": 6030,
-      "name": "OracleConfidenceTooWide",
-      "msg": "Intervalo de confiança do oráculo acima do tolerado"
-    },
-    {
-      "code": 6031,
-      "name": "OracleNotFullyVerified",
-      "msg": "Atualização de preço sem verificação completa"
-    },
-    {
-      "code": 6032,
-      "name": "InvalidOracleConfig",
-      "msg": "Configuração de oráculo inválida"
-    },
-    {
-      "code": 6033,
-      "name": "VestingCliffNotReached",
-      "msg": "Período de carência do vesting ainda não encerrado"
-    },
-    {
-      "code": 6034,
-      "name": "NothingToClaim",
-      "msg": "Nenhum token liberado para saque"
-    },
-    {
-      "code": 6035,
-      "name": "ConfirmationRequired",
-      "msg": "Confirmação explícita obrigatória para operação irreversível"
-    },
-    {
-      "code": 6036,
-      "name": "NoPendingAdmin",
-      "msg": "Não há administrador pendente"
-    },
-    {
-      "code": 6037,
-      "name": "InvalidImageHash",
-      "msg": "Hash SHA-256 da imagem do token ausente"
-    },
-    {
-      "code": 6038,
-      "name": "ZeroReferenceSupply",
-      "msg": "Supply de referência zerado"
+      "code": 6014,
+      "name": "InvalidAddress",
+      "msg": "Endereço inválido"
     }
   ],
   "types": [
     {
-      "name": "AdministrativeConfigurationUpdated",
+      "name": "AuthorityProposed",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "scope",
-            "type": {
-              "defined": {
-                "name": "ConfigScope"
-              }
-            }
-          },
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "target",
+            "name": "pool",
             "type": "pubkey"
           },
           {
-            "name": "admin",
+            "name": "current",
             "type": "pubkey"
           },
           {
-            "name": "timestamp",
-            "type": "i64"
+            "name": "proposed",
+            "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "BackingLedger",
+      "name": "AuthorityTransferred",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositRecord",
       "docs": [
-        "Controle de lastro, taxas e histórico agregado (PDA [\"ledger\", vault])."
+        "Registro individual de cada injeção de capital sem token.",
+        "PDA: [\"deposit\", pool, reference] — a mesma referência não pode ser usada duas vezes."
       ],
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "vault",
+            "name": "pool",
             "type": "pubkey"
           },
           {
-            "name": "sol_backing",
+            "name": "depositor",
+            "type": "pubkey"
+          },
+          {
+            "name": "reference",
             "docs": [
-              "Lastro contabilizado (somente entradas via programa; doações diretas não contam)."
+              "Identificador externo (ex.: hash do comprovante Pix/TxID de origem)."
             ],
-            "type": "u64"
-          },
-          {
-            "name": "usdc_backing",
-            "type": "u64"
-          },
-          {
-            "name": "sol_fees_collected",
-            "docs": [
-              "Receita da plataforma (já repassada à carteira de receita; nunca compõe o lastro)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "usdc_fees_collected",
-            "type": "u64"
-          },
-          {
-            "name": "sol_profit_injected",
-            "docs": [
-              "Depósitos de lucro (líquidos) acumulados."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "usdc_profit_injected",
-            "type": "u64"
-          },
-          {
-            "name": "sol_buy_inflow",
-            "docs": [
-              "Entradas líquidas por compras."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "usdc_buy_inflow",
-            "type": "u64"
-          },
-          {
-            "name": "sol_redeemed",
-            "docs": [
-              "Saídas brutas por resgates."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "usdc_redeemed",
-            "type": "u64"
-          },
-          {
-            "name": "buy_count",
-            "type": "u64"
-          },
-          {
-            "name": "sell_count",
-            "type": "u64"
-          },
-          {
-            "name": "profit_count",
-            "type": "u64"
-          },
-          {
-            "name": "claim_count",
-            "type": "u64"
-          },
-          {
-            "name": "last_operation_ts",
-            "type": "i64"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "reserved",
             "type": {
               "array": [
                 "u8",
                 32
               ]
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "BuyerRecord",
-      "docs": [
-        "Controle de compras por carteira (PDA [\"buyer\", vault, buyer])."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "vault",
-            "type": "pubkey"
           },
           {
-            "name": "buyer",
-            "type": "pubkey"
-          },
-          {
-            "name": "total_purchased",
+            "name": "amount",
             "type": "u64"
           },
           {
-            "name": "total_sold",
+            "name": "index",
             "type": "u64"
           },
           {
-            "name": "net_acquired",
-            "docs": [
-              "Compras líquidas (compradas - resgatadas) via programa; limitado a max_wallet."
-            ],
+            "name": "slot",
             "type": "u64"
           },
           {
-            "name": "purchase_count",
-            "type": "u32"
-          },
-          {
-            "name": "last_purchase_ts",
+            "name": "timestamp",
             "type": "i64"
           },
           {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ConfigScope",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Factory"
-          },
-          {
-            "name": "AdminTransfer"
-          },
-          {
-            "name": "EntityVault"
-          },
-          {
-            "name": "Registry"
-          },
-          {
-            "name": "MintAuthorityRevoked"
-          }
-        ]
-      }
-    },
-    {
-      "name": "EntityVault",
-      "docs": [
-        "Cofre de uma entidade (PDA [\"entity_vault\", entity_id LE])."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "contract_number",
-            "type": "u64"
-          },
-          {
-            "name": "authority",
+            "name": "during_capitalization",
             "docs": [
-              "Autoridade administrativa (espelho do admin da Factory no último ato administrativo)."
+              "Fase no momento do depósito (false = cunhagem, true = capitalização)."
             ],
-            "type": "pubkey"
-          },
-          {
-            "name": "profit_injector",
-            "docs": [
-              "Remetente autorizado de `inject_daily_profit`."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "verum_wallet",
-            "docs": [
-              "Destino exclusivo e imutável do vesting."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "revenue_wallet",
-            "docs": [
-              "Carteira de receita autorizada (taxas)."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "sol_treasury",
-            "type": "pubkey"
-          },
-          {
-            "name": "usdc_treasury",
-            "type": "pubkey"
-          },
-          {
-            "name": "ledger",
-            "type": "pubkey"
-          },
-          {
-            "name": "vesting",
-            "type": "pubkey"
-          },
-          {
-            "name": "registry",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_name",
-            "type": "string"
-          },
-          {
-            "name": "token_symbol",
-            "type": "string"
-          },
-          {
-            "name": "decimals",
-            "type": "u8"
-          },
-          {
-            "name": "hard_cap_tokens",
-            "docs": [
-              "Hard Cap em tokens inteiros (25M / 50M / 100M)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "hard_cap",
-            "docs": [
-              "Hard Cap em unidades-base (hard_cap_tokens * 10^decimals)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "initial_pool_amount",
-            "docs": [
-              "Lastro inicial em USDC (unidades-base) aportado na ativação."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "min_buy",
-            "type": "u64"
-          },
-          {
-            "name": "max_buy",
-            "type": "u64"
-          },
-          {
-            "name": "max_wallet",
-            "type": "u64"
-          },
-          {
-            "name": "platform_fee_bps",
-            "type": "u16"
-          },
-          {
-            "name": "charge_fee_on_profit",
             "type": "bool"
           },
           {
-            "name": "circulating_supply",
-            "docs": [
-              "Supply em circulação (fora do vesting)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "vesting_locked_supply",
-            "docs": [
-              "Supply bloqueado no escrow de vesting."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "total_minted",
-            "type": "u64"
-          },
-          {
-            "name": "total_burned",
-            "type": "u64"
-          },
-          {
-            "name": "status",
-            "type": {
-              "defined": {
-                "name": "VaultStatus"
-              }
-            }
-          },
-          {
-            "name": "minting_closed",
-            "type": "bool"
-          },
-          {
-            "name": "created_at",
-            "type": "i64"
-          },
-          {
-            "name": "activated_at",
-            "type": "i64"
-          },
-          {
             "name": "bump",
             "type": "u8"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitializePoolParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            "name": "mint_bump",
+            "name": "token_decimals",
             "type": "u8"
           },
           {
-            "name": "sol_treasury_bump",
-            "type": "u8"
-          },
-          {
-            "name": "usdc_treasury_bump",
-            "type": "u8"
-          },
-          {
-            "name": "ledger_bump",
-            "type": "u8"
-          },
-          {
-            "name": "vesting_bump",
-            "type": "u8"
-          },
-          {
-            "name": "vesting_escrow_bump",
-            "type": "u8"
-          },
-          {
-            "name": "registry_bump",
-            "type": "u8"
-          },
-          {
-            "name": "image_sha256",
+            "name": "max_supply",
             "docs": [
-              "SHA-256 do arquivo de imagem do token. Gravado uma única vez na ativação;",
-              "nenhuma instrução o altera. Permite provar que a imagem nunca mudou."
+              "Teto de emissão em unidades atômicas."
             ],
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "EntityVaultActivated",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
             "type": "u64"
           },
           {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "sol_treasury",
-            "type": "pubkey"
-          },
-          {
-            "name": "usdc_treasury",
-            "type": "pubkey"
-          },
-          {
-            "name": "vesting",
-            "type": "pubkey"
-          },
-          {
-            "name": "vesting_allocation",
+            "name": "initial_price",
+            "docs": [
+              "Unidades atômicas de quote por 1 token inteiro × 1e9.",
+              "Ex.: US$ 0,001 com USDC (6 casas) = 1_000 × 1e9."
+            ],
             "type": "u64"
           },
           {
-            "name": "vesting_cliff_ts",
-            "type": "i64"
-          },
-          {
-            "name": "vesting_end_ts",
-            "type": "i64"
-          },
-          {
-            "name": "initial_pool_amount",
-            "type": "u64"
-          },
-          {
-            "name": "token_uri",
-            "type": "string"
-          },
-          {
-            "name": "image_sha256",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "funder",
-            "type": "pubkey"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "EntityVaultInitialized",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "contract_number",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "registry",
-            "type": "pubkey"
-          },
-          {
-            "name": "authority",
-            "type": "pubkey"
-          },
-          {
-            "name": "verum_wallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "revenue_wallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "token_name",
-            "type": "string"
-          },
-          {
-            "name": "token_symbol",
-            "type": "string"
-          },
-          {
-            "name": "decimals",
-            "type": "u8"
-          },
-          {
-            "name": "hard_cap",
-            "type": "u64"
-          },
-          {
-            "name": "min_buy",
-            "type": "u64"
-          },
-          {
-            "name": "max_buy",
-            "type": "u64"
-          },
-          {
-            "name": "max_wallet",
-            "type": "u64"
-          },
-          {
-            "name": "platform_fee_bps",
+            "name": "buy_fee_bps",
             "type": "u16"
           },
           {
-            "name": "initial_pool_amount",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
+            "name": "sell_fee_bps",
+            "type": "u16"
           }
         ]
       }
     },
     {
-      "name": "FactoryConfig",
+      "name": "MintingCompleted",
       "docs": [
-        "Configuração global da Factory (PDA [\"config\"])."
+        "Transição de fase: último token cunhado, autoridade de cunhagem revogada."
       ],
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "admin",
+            "name": "pool",
             "type": "pubkey"
           },
           {
-            "name": "pending_admin",
+            "name": "token_mint",
             "type": "pubkey"
           },
           {
-            "name": "revenue_wallet",
-            "docs": [
-              "Carteira de receita padrão da Mastter.Digital (copiada para novos cofres)."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "usdc_mint",
-            "docs": [
-              "Mint do USDC (SPL Token clássico) aceito pelo protocolo."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "usdc_decimals",
-            "type": "u8"
-          },
-          {
-            "name": "oracle_program",
-            "docs": [
-              "Programa dono das contas de preço (Pyth Solana Receiver)."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "sol_price_account",
-            "type": "pubkey"
-          },
-          {
-            "name": "usdc_price_account",
-            "type": "pubkey"
-          },
-          {
-            "name": "sol_feed_id",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "usdc_feed_id",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "max_price_age_secs",
+            "name": "max_supply",
             "type": "u64"
           },
           {
-            "name": "max_conf_bps",
-            "type": "u16"
+            "name": "quote_reserve",
+            "type": "u64"
           },
           {
-            "name": "default_fee_bps",
-            "type": "u16"
-          },
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PausedChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            "name": "ops_utc_offset_secs",
-            "docs": [
-              "Offset UTC (segundos) usado apenas para sinalizar a janela recomendada das injeções."
-            ],
-            "type": "i32"
+            "name": "pool",
+            "type": "pubkey"
           },
           {
             "name": "paused",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pool",
+      "docs": [
+        "Estado do cofre de um token. PDA: [\"pool\", token_mint].",
+        "",
+        "Não existe nenhum campo, instrução ou autoridade capaz de retirar USDC do",
+        "`quote_vault` — a única saída é `sell`, que exige entrega de tokens."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "Administração: só pode pausar compras/injeções e transferir a própria função."
+            ],
+            "type": "pubkey"
           },
           {
-            "name": "entity_count",
+            "name": "pending_authority",
+            "docs": [
+              "Transferência de administração em duas etapas (Pubkey::default() = nenhuma)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "quote_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "max_supply",
+            "docs": [
+              "Teto de emissão, fixado na criação e imutável."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "minted_total",
+            "docs": [
+              "Total já cunhado (monotônico)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "initial_price",
+            "docs": [
+              "Preço da fase 1: unidades atômicas de quote por 1 token inteiro × 1e9. Imutável."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "buy_fee_bps",
+            "docs": [
+              "Taxas imutáveis, retidas no próprio cofre."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "sell_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "minting_completed",
+            "type": "bool"
+          },
+          {
+            "name": "minting_completed_at",
+            "type": "i64"
+          },
+          {
+            "name": "paused",
+            "docs": [
+              "Pausa bloqueia compras e injeções. Vendas NUNCA são pausáveis."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "total_quote_from_buys",
+            "type": "u64"
+          },
+          {
+            "name": "total_quote_injected",
+            "type": "u64"
+          },
+          {
+            "name": "total_quote_paid_on_sells",
+            "type": "u64"
+          },
+          {
+            "name": "total_tokens_bought",
+            "type": "u64"
+          },
+          {
+            "name": "total_tokens_sold",
+            "type": "u64"
+          },
+          {
+            "name": "deposit_count",
             "type": "u64"
           },
           {
@@ -3321,196 +1111,71 @@
             "type": "u8"
           },
           {
-            "name": "reserved",
-            "type": {
-              "array": [
-                "u8",
-                64
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "FactoryInitialized",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "admin",
-            "type": "pubkey"
-          },
-          {
-            "name": "revenue_wallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "usdc_mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "oracle_program",
-            "type": "pubkey"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "HardCapReached",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "hard_cap",
-            "type": "u64"
-          },
-          {
-            "name": "circulating_supply",
-            "type": "u64"
-          },
-          {
-            "name": "vesting_locked_supply",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "InitializeEntityVaultArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "token_name",
-            "type": "string"
-          },
-          {
-            "name": "token_symbol",
-            "type": "string"
-          },
-          {
-            "name": "decimals",
+            "name": "token_vault_bump",
             "type": "u8"
           },
           {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "contract_number",
-            "type": "u64"
-          },
-          {
-            "name": "company_name",
-            "type": "string"
-          },
-          {
-            "name": "address",
-            "type": "string"
-          },
-          {
-            "name": "phone",
-            "type": "string"
-          },
-          {
-            "name": "country",
-            "type": "string"
-          },
-          {
-            "name": "directors_names",
-            "type": "string"
-          },
-          {
-            "name": "payer_name",
-            "type": "string"
-          },
-          {
-            "name": "verum_wallet_address",
-            "type": "pubkey"
-          },
-          {
-            "name": "initial_pool_amount",
-            "docs": [
-              "Lastro inicial em USDC (unidades-base), aportado em `activate_entity_vault`."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "hard_cap",
-            "docs": [
-              "Hard Cap em tokens inteiros: 25_000_000, 50_000_000 ou 100_000_000."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "min_buy",
-            "docs": [
-              "Limites anti-whale em unidades-base do token."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "max_buy",
-            "type": "u64"
-          },
-          {
-            "name": "max_wallet",
-            "type": "u64"
-          },
-          {
-            "name": "platform_fee",
-            "docs": [
-              "Taxa de plataforma em basis points (padrão 119 = 1,19%)."
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "profit_injector",
-            "type": "pubkey"
-          },
-          {
-            "name": "charge_fee_on_profit",
-            "type": "bool"
+            "name": "quote_vault_bump",
+            "type": "u8"
           }
         ]
       }
     },
     {
-      "name": "InitializeFactoryArgs",
+      "name": "PoolInitialized",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "oracle_program",
+            "name": "pool",
             "type": "pubkey"
           },
           {
-            "name": "sol_price_account",
+            "name": "authority",
             "type": "pubkey"
           },
           {
-            "name": "usdc_price_account",
+            "name": "token_mint",
             "type": "pubkey"
           },
           {
-            "name": "sol_feed_id",
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_supply",
+            "type": "u64"
+          },
+          {
+            "name": "initial_price",
+            "type": "u64"
+          },
+          {
+            "name": "buy_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "sell_fee_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuoteInjected",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "depositor",
+            "type": "pubkey"
+          },
+          {
+            "name": "reference",
             "type": {
               "array": [
                 "u8",
@@ -3519,327 +1184,31 @@
             }
           },
           {
-            "name": "usdc_feed_id",
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
-            "name": "max_price_age_secs",
+            "name": "amount",
             "type": "u64"
           },
           {
-            "name": "max_conf_bps",
-            "type": "u16"
-          },
-          {
-            "name": "ops_utc_offset_secs",
-            "type": "i32"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PaymentAsset",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "Sol"
-          },
-          {
-            "name": "Usdc"
-          }
-        ]
-      }
-    },
-    {
-      "name": "PlatformFeeCollected",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
+            "name": "index",
             "type": "u64"
           },
           {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "payer",
-            "type": "pubkey"
-          },
-          {
-            "name": "revenue_wallet",
-            "type": "pubkey"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": {
-                "name": "PaymentAsset"
-              }
-            }
-          },
-          {
-            "name": "fee_amount",
-            "type": "u64"
-          },
-          {
-            "name": "fee_bps",
-            "type": "u16"
-          },
-          {
-            "name": "operation",
-            "docs": [
-              "0 = compra, 1 = resgate, 2 = injeção de lucro"
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "ProfitInjected",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "injector",
-            "type": "pubkey"
-          },
-          {
-            "name": "origin",
-            "type": "string"
-          },
-          {
-            "name": "reference_id",
-            "type": "u64"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": {
-                "name": "PaymentAsset"
-              }
-            }
-          },
-          {
-            "name": "gross_amount",
-            "type": "u64"
-          },
-          {
-            "name": "fee_amount",
-            "type": "u64"
-          },
-          {
-            "name": "net_amount",
-            "type": "u64"
-          },
-          {
-            "name": "sol_backing",
-            "type": "u64"
-          },
-          {
-            "name": "usdc_backing",
-            "type": "u64"
-          },
-          {
-            "name": "reference_supply",
-            "type": "u64"
-          },
-          {
-            "name": "local_hour",
-            "type": "u8"
-          },
-          {
-            "name": "local_weekday",
-            "type": "u8"
-          },
-          {
-            "name": "within_recommended_window",
+            "name": "during_capitalization",
             "type": "bool"
           },
           {
-            "name": "timestamp",
-            "type": "i64"
+            "name": "price_after",
+            "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "ProfitReceipt",
-      "docs": [
-        "Recibo de injeção de lucro (PDA [\"profit\", vault, reference_id LE]).",
-        "A criação com `init` impede a duplicação do mesmo repasse."
-      ],
+      "name": "TokensBought",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "reference_id",
-            "type": "u64"
-          },
-          {
-            "name": "injector",
-            "type": "pubkey"
-          },
-          {
-            "name": "origin",
-            "type": "string"
-          },
-          {
-            "name": "asset",
-            "type": {
-              "defined": {
-                "name": "PaymentAsset"
-              }
-            }
-          },
-          {
-            "name": "gross_amount",
-            "type": "u64"
-          },
-          {
-            "name": "fee_amount",
-            "type": "u64"
-          },
-          {
-            "name": "net_amount",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          },
-          {
-            "name": "local_hour",
-            "type": "u8"
-          },
-          {
-            "name": "local_weekday",
-            "type": "u8"
-          },
-          {
-            "name": "within_recommended_window",
-            "type": "bool"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "RegistryData",
-      "docs": [
-        "Dados cadastrais da entidade (PDA [\"registry\", vault])."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "contract_number",
-            "type": "u64"
-          },
-          {
-            "name": "company_name",
-            "type": "string"
-          },
-          {
-            "name": "address",
-            "type": "string"
-          },
-          {
-            "name": "phone",
-            "type": "string"
-          },
-          {
-            "name": "country",
-            "type": "string"
-          },
-          {
-            "name": "directors_names",
-            "type": "string"
-          },
-          {
-            "name": "payer_name",
-            "type": "string"
-          },
-          {
-            "name": "registered_by",
-            "docs": [
-              "Histórico de registro."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "registered_at",
-            "type": "i64"
-          },
-          {
-            "name": "last_updated_by",
-            "type": "pubkey"
-          },
-          {
-            "name": "last_updated_at",
-            "type": "i64"
-          },
-          {
-            "name": "update_count",
-            "type": "u32"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "TokenPurchased",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
+            "name": "pool",
             "type": "pubkey"
           },
           {
@@ -3847,63 +1216,43 @@
             "type": "pubkey"
           },
           {
-            "name": "asset",
-            "type": {
-              "defined": {
-                "name": "PaymentAsset"
-              }
-            }
-          },
-          {
-            "name": "gross_amount",
+            "name": "quote_charged",
             "type": "u64"
           },
           {
-            "name": "fee_amount",
+            "name": "fee",
             "type": "u64"
           },
           {
-            "name": "net_amount",
+            "name": "tokens_out",
             "type": "u64"
           },
           {
-            "name": "tokens_minted",
+            "name": "from_inventory",
             "type": "u64"
           },
           {
-            "name": "circulating_supply",
+            "name": "minted",
             "type": "u64"
           },
           {
-            "name": "reference_supply",
+            "name": "minted_total",
             "type": "u64"
           },
           {
-            "name": "sol_backing",
+            "name": "price_after",
             "type": "u64"
-          },
-          {
-            "name": "usdc_backing",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "TokenRedeemed",
+      "name": "TokensSold",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
+            "name": "pool",
             "type": "pubkey"
           },
           {
@@ -3911,445 +1260,24 @@
             "type": "pubkey"
           },
           {
-            "name": "asset",
-            "type": {
-              "defined": {
-                "name": "PaymentAsset"
-              }
-            }
-          },
-          {
-            "name": "tokens_burned",
+            "name": "tokens_in",
             "type": "u64"
           },
           {
-            "name": "gross_amount",
+            "name": "gross_quote",
             "type": "u64"
           },
           {
-            "name": "fee_amount",
+            "name": "fee",
             "type": "u64"
           },
           {
-            "name": "net_amount",
+            "name": "net_quote",
             "type": "u64"
           },
           {
-            "name": "circulating_supply",
+            "name": "price_after",
             "type": "u64"
-          },
-          {
-            "name": "reference_supply",
-            "type": "u64"
-          },
-          {
-            "name": "sol_backing",
-            "type": "u64"
-          },
-          {
-            "name": "usdc_backing",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "UpdateEntityConfigArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "min_buy",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "max_buy",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "max_wallet",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "platform_fee_bps",
-            "type": {
-              "option": "u16"
-            }
-          },
-          {
-            "name": "profit_injector",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "charge_fee_on_profit",
-            "type": {
-              "option": "bool"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "UpdateFactoryConfigArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "oracle_program",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "sol_price_account",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "usdc_price_account",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "sol_feed_id",
-            "type": {
-              "option": {
-                "array": [
-                  "u8",
-                  32
-                ]
-              }
-            }
-          },
-          {
-            "name": "usdc_feed_id",
-            "type": {
-              "option": {
-                "array": [
-                  "u8",
-                  32
-                ]
-              }
-            }
-          },
-          {
-            "name": "max_price_age_secs",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "max_conf_bps",
-            "type": {
-              "option": "u16"
-            }
-          },
-          {
-            "name": "ops_utc_offset_secs",
-            "type": {
-              "option": "i32"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "UpdateRegistryArgs",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "company_name",
-            "type": "string"
-          },
-          {
-            "name": "address",
-            "type": "string"
-          },
-          {
-            "name": "phone",
-            "type": "string"
-          },
-          {
-            "name": "country",
-            "type": "string"
-          },
-          {
-            "name": "directors_names",
-            "type": "string"
-          },
-          {
-            "name": "payer_name",
-            "type": "string"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VaultPaused",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "admin",
-            "type": "pubkey"
-          },
-          {
-            "name": "factory_wide",
-            "type": "bool"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VaultResumed",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "admin",
-            "type": "pubkey"
-          },
-          {
-            "name": "factory_wide",
-            "type": "bool"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VaultSnapshot",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "sol_backing",
-            "type": "u64"
-          },
-          {
-            "name": "usdc_backing",
-            "type": "u64"
-          },
-          {
-            "name": "circulating_supply",
-            "type": "u64"
-          },
-          {
-            "name": "vesting_locked_supply",
-            "type": "u64"
-          },
-          {
-            "name": "nav_nano_usd",
-            "docs": [
-              "NAV total em nano-USD (preço médio do oráculo)."
-            ],
-            "type": "u128"
-          },
-          {
-            "name": "price_per_token_nano_usd",
-            "docs": [
-              "Preço por token inteiro em nano-USD."
-            ],
-            "type": "u128"
-          },
-          {
-            "name": "reserved_for_redemptions_nano_usd",
-            "docs": [
-              "Parcela do lastro reservada para resgates do supply circulante (nano-USD)."
-            ],
-            "type": "u128"
-          },
-          {
-            "name": "vesting_backing_nano_usd",
-            "docs": [
-              "Parcela do lastro vinculada aos tokens bloqueados em vesting (nano-USD)."
-            ],
-            "type": "u128"
-          },
-          {
-            "name": "sol_fees_collected",
-            "type": "u64"
-          },
-          {
-            "name": "usdc_fees_collected",
-            "type": "u64"
-          },
-          {
-            "name": "sol_profit_injected",
-            "type": "u64"
-          },
-          {
-            "name": "usdc_profit_injected",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VaultStatus",
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "PendingActivation"
-          },
-          {
-            "name": "Active"
-          },
-          {
-            "name": "Paused"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VestedTokensClaimed",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "entity_id",
-            "type": "u64"
-          },
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "beneficiary",
-            "type": "pubkey"
-          },
-          {
-            "name": "destination",
-            "type": "pubkey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "total_released",
-            "type": "u64"
-          },
-          {
-            "name": "remaining",
-            "type": "u64"
-          },
-          {
-            "name": "timestamp",
-            "type": "i64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "VestingAccount",
-      "docs": [
-        "Vesting de 30% do Hard Cap (PDA [\"vesting\", vault])."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "vault",
-            "type": "pubkey"
-          },
-          {
-            "name": "mint",
-            "type": "pubkey"
-          },
-          {
-            "name": "escrow",
-            "type": "pubkey"
-          },
-          {
-            "name": "beneficiary",
-            "docs": [
-              "Destinatário autorizado (Verum Wallet)."
-            ],
-            "type": "pubkey"
-          },
-          {
-            "name": "total_allocated",
-            "type": "u64"
-          },
-          {
-            "name": "released",
-            "type": "u64"
-          },
-          {
-            "name": "remaining",
-            "type": "u64"
-          },
-          {
-            "name": "start_ts",
-            "type": "i64"
-          },
-          {
-            "name": "cliff_ts",
-            "type": "i64"
-          },
-          {
-            "name": "end_ts",
-            "type": "i64"
-          },
-          {
-            "name": "last_claim_ts",
-            "type": "i64"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
           }
         ]
       }

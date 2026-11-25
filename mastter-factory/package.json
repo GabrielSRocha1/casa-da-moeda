@@ -5,8 +5,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "anchor build",
-    "test": "RUST_LOG=error ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.test.ts",
-    "test:anchor": "anchor test --skip-local-validator"
+    "test": "cargo test -p mastter_factory"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.31.1",

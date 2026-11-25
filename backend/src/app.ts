@@ -148,7 +148,7 @@ export function createApp(deps: AppDeps): AppContainer {
 
   if (factory) {
     app.use('/api/factory', factoryRoutes(factory, { webhook: guards.webhook, write: guards.write }));
-    logger.info({ programId: factory.programId.toBase58(), buyer: factory.buyerAddress }, 'mastter_factory: cliente on-chain ativo (/api/factory)');
+    logger.info({ programId: factory.programId.toBase58(), signer: factory.signerAddress }, 'mastter_factory: cliente on-chain ativo (/api/factory)');
   }
 
   app.use('/api/tokens', tokensRoutes(tokens));
@@ -221,6 +221,7 @@ function buildFactoryClient(env: Env, logger: Logger): FactoryClient | null {
       cluster: env.FACTORY_CLUSTER,
       buyerKeypairPath,
       buyerSecretKey,
+      quoteMint: env.FACTORY_QUOTE_MINT,
       logger,
     });
   } catch (err) {

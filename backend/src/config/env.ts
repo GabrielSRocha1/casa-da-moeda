@@ -77,6 +77,8 @@ const EnvSchema = z
     /** Keypair do comprador/pagador que assina as instruções do factory. Default: a tesouraria. */
     FACTORY_BUYER_KEYPAIR_PATH: z.string().optional(),
     FACTORY_BUYER_SECRET_KEY: z.string().optional(),
+    /** Mint da moeda de cotação (USDC) usada ao criar novos pools (initialize_pool). */
+    FACTORY_QUOTE_MINT: z.string().optional(),
     /** Mapa símbolo→mint no cluster do dispatcher, ex.: "BDC:...,VRC:...,ESCT:...". Sobrepõe os mints de mainnet. */
     SOLANA_TOKEN_MINTS: z
       .string()
